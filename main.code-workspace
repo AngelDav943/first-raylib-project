@@ -57,6 +57,6 @@
 			"regex": "cpp"
 		},
 		"git.autoRepositoryDetection": false,
-		"git.enabled": false
+		"git.enabled": true
 	}
 }
