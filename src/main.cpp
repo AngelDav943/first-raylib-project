@@ -3,7 +3,9 @@
 using namespace std;
 
 #include "Utilities/SceneManager.h"
+
 #include "Scenes/MenuScene.h"
+#include "Scenes/TestScene.h"
 
 int main()
 {
@@ -14,7 +16,10 @@ int main()
     InitWindow(screenWidth, screenHeight, "An amazing project");
     SetWindowMinSize(screenWidth / 2, screenHeight / 2);
 
-    globalSceneManager.ChangeScene(make_unique<MenuScene>());
+    globalSceneManager.InsertScene("Menu", make_unique<MenuScene>());
+    globalSceneManager.InsertScene("Test", make_unique<TestScene>());
+
+    globalSceneManager.LoadScene("Menu");
 
     SetTargetFPS(60);
 
@@ -51,6 +56,8 @@ int main()
         globalSceneManager.Draw();
 
         EndDrawing();
+
+        globalSceneManager.LateUpdate();
     }
 
     CloseWindow();

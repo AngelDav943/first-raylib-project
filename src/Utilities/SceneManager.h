@@ -2,43 +2,81 @@
 #define SCENEMANAGER_H
 
 #include "../Scene.h"
+#include <map>
 #include <memory>
 #include <stack>
 
 class SceneManager
 {
 public:
-    void ChangeScene(std::unique_ptr<Scene> newScene)
+    Scene *getScene(string SceneName)
     {
-        if (!scenes.empty())
+        if (savedScenes.count(SceneName) > 0)
         {
-            scenes.top()->Unload();
-            scenes.top()->ui.Unload();
+            return savedScenes.at(currentScene).get();
         }
-        scenes.push(std::move(newScene));
-        scenes.top()->Start();
+        return nullptr;
+    }
+
+    void LoadScene(string SceneName)
+    {
+        if (loaded)
+        {
+            Scene *loadedScene = savedScenes.at(currentScene).get();
+            loadedScene->ui.Unload();
+            loadedScene->Unload();
+        }
+
+        currentScene = SceneName;
+        Scene *newScene = getScene(SceneName);
+        if (newScene)
+        {
+            started = false;
+            newScene->Start();
+            loaded = true;
+        }
+    }
+
+    void InsertScene(string sceneName, std::unique_ptr<Scene> newScene)
+    {
+        savedScenes.insert({sceneName, std::move(newScene)});
     }
 
     void Update()
     {
-        if (!scenes.empty())
+        if (!savedScenes.empty() && started == true)
         {
-            scenes.top()->ui.Update();
-            scenes.top()->Update();
+            Scene *loadedScene = savedScenes.at(currentScene).get();
+            loadedScene->ui.Update();
+            loadedScene->Update();
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (!savedScenes.empty() && started == true)
+        {
+            Scene *loadedScene = savedScenes.at(currentScene).get();
+            loadedScene->LateUpdate();
         }
     }
 
     void Draw()
     {
-        if (!scenes.empty())
+        if (!savedScenes.empty())
         {
-            scenes.top()->Draw();
-            scenes.top()->ui.Draw();
+            started = true;
+            Scene *loadedScene = savedScenes.at(currentScene).get();
+            loadedScene->Draw();
+            loadedScene->ui.Draw();
         }
     }
 
 private:
-    std::stack<std::unique_ptr<Scene>> scenes;
+    map<string, std::unique_ptr<Scene>> savedScenes;
+    string currentScene;
+    bool loaded = false;
+    bool started = false;
 };
 
 // Global instance of SceneManager

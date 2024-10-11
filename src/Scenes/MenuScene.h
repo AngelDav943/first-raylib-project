@@ -1,3 +1,6 @@
+#ifndef MENUSCENE_H
+#define MENUSCENE_H
+
 #include "../Scene.h"
 #include <bits/stdc++.h>
 #include <list>
@@ -10,16 +13,10 @@
 #include "../Utilities/CameraController.h"
 #include "../Utilities/ElementsUI.h"
 
-#include "TestScene.h"
-
 class MenuScene : public Scene
 {
 private:
     Texture2D tile_texture;
-    UIButton *startButton = new UIButton(
-        (Vector2){100, 100},
-        (Vector2){200, 50},
-        "Change scene");
 
 public:
     // Initialize game assets
@@ -27,33 +24,98 @@ public:
     {
         tile_texture = LoadTexture("assets/textures/blueprint_tiles.png");
 
-        // Sets the callback function for the onClick event
-        startButton->onClick([]()
-                             { globalSceneManager.ChangeScene(std::make_unique<TestScene>()); });
+        ui.AddElement(
+            "test",
+            new UIButton(
+                UIPosition{
+                    Vector2{0, -10}, // Local position
+                    Anchor{
+                        Vector2{0.5f, 1},   // Local anchor
+                        Vector2{0.5f, 0.5f} // Screen anchor
+                    },
+                    Size{
+                        Scaling{500, 50}, // Offset
+                        Scaling{0}        // Scale
+                    }},
+                "Toggle start button visibility"));
 
-        ui.AddElement(startButton);
+        ui.AddElement(
+            "start",
+            new UIButton(
+                UIPosition{
+                    Vector2{0, 0}, // Offset position
+                    Anchor{
+                        Vector2{0.5f, 0},   // Local anchor
+                        Vector2{0.5f, 0.5f} // Screen anchor
+                    },
+                    Size{
+                        Scaling{500, 50}, // Offset
+                        Scaling{0},       // Scale
+                    }},
+                "Play"));
+
+        ui.AddElement(
+            "quit",
+            new UIButton(
+                UIPosition{
+                    Vector2{0, 0}, // Offset position
+                    Anchor{
+                        Vector2{0, 1}, // Local anchor
+                        Vector2{0, 1}  // Screen anchor
+                    },
+                    Size{
+                        Scaling{0, 50}, // Offset
+                        Scaling{1, 0},  // Scale
+                    }},
+                "Quit"));
     }
 
     // Game logic update
     void Update() override
     {
-        /*if (IsKeyPressed(KEY_ENTER)) // Change scene when Enter is pressed
+        UIButton *startButton = ui.GetElementById<UIButton>("start");
+        if (ui.GetElementById<UIButton>("test")->hasClicked())
         {
-            globalSceneManager.ChangeScene(std::make_unique<TestScene>());
-        }*/
+            startButton->setVisible(startButton->isVisible() == false);
+        }
+
+        if (ui.GetElementById<UIButton>("quit")->hasClicked())
+        {
+            CloseWindow();
+        }
+
+        if (startButton->hasClicked())
+        {
+            globalSceneManager.LoadScene("Test");
+        }
     }
 
+    void LateUpdate() {}
+
+    int tileSpeed = 20;
+    Vector2 tileOffset = {0};
     void Draw() override
     {
+
+        // While the offset is less than the width of the texture it'll be multiplied by 1
+        // If its offset is more than the width it'll be multiplied by 0 thus resetting the position
+        tileOffset = {
+            (tileOffset.x <= tile_texture.width) * (tileOffset.x + (tileSpeed * GetFrameTime())),
+            (tileOffset.y <= tile_texture.height) * (tileOffset.y + (tileSpeed * GetFrameTime()))};
+
         int tileWidthRepeats = (int)ceilf(GetScreenWidth() / tile_texture.width);
         int tileHeightRepeats = (int)ceilf(GetScreenHeight() / tile_texture.height);
 
         DrawTexture(tile_texture, 0, 0, WHITE);
-        for (int x = 0; x <= tileWidthRepeats; x++)
+        for (int x = 0; x <= tileWidthRepeats + 1; x++)
         {
-            for (int y = 0; y <= tileHeightRepeats; y++)
+            for (int y = 0; y <= tileHeightRepeats + 1; y++)
             {
-                DrawTexture(tile_texture, x * tile_texture.width, y * tile_texture.height, WHITE);
+                DrawTexture(
+                    tile_texture,
+                    tileOffset.x + ((x - 1) * tile_texture.width),
+                    tileOffset.y + ((y - 1) * tile_texture.height),
+                    WHITE);
             }
         }
 
@@ -69,15 +131,12 @@ public:
             i++;
             DrawText(text.c_str(), 20, 20 + (i * 25), 20, ORANGE);
         }
-
-        startButton->position = Vector2{
-            (GetScreenWidth()/2) - (startButton->size.x/2),
-            (GetScreenHeight()/2) - (startButton->size.y/2)
-            };
     }
 
     void Unload() override
     {
         // Unload game assets
+        UnloadTexture(tile_texture);
     }
 };
+#endif
