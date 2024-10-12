@@ -7,8 +7,8 @@
 #include <memory>
 #include <raylib.h>
 
-template <typename T>
-T clamp(const T &value, const T &min, const T &max)
+
+float clamp(const float &value, const float &min, const float &max)
 {
     return (value < min) ? min : (value > max) ? max
                                                : value;
@@ -43,8 +43,11 @@ struct UIPosition
     Anchor anchor;
     Size size;
 
-    UIPosition(Vector2 pos, Anchor anch, Size sz)
-        : position(pos), anchor(anch), size(sz) {}
+    Scaling maxSize;
+    Scaling minSize;
+
+    UIPosition(Vector2 pos, Anchor anch, Size sz, Scaling maxSz = Scaling{-1}, Scaling minSz = Scaling{-1})
+        : position(pos), anchor(anch), size(sz), maxSize(maxSz), minSize(minSz) {}
 };
 
 class UIElement
@@ -59,31 +62,46 @@ public:
     virtual void Update() = 0;
     virtual void Unload() = 0;
 
+    void setParentBounds(UIElement *parent)
+    {
+        parentBounds = parent;
+    }
+
     Rectangle getBounds()
     {
-        int screenWidth = GetRenderWidth();
-        int screenHeight = GetRenderHeight();
+        Rectangle parentRectangle = { 0, 0, GetRenderWidth(), GetRenderHeight()};
+        if (parentBounds != nullptr)
+        {
+            parentRectangle = parentBounds->getBounds();
+        }
 
         Anchor uiAnchor = location.anchor;
         Size uiSize = location.size;
 
-        float screenXscale = screenWidth * clamp<float>(uiSize.scale.width, 0, 1);
-        float screenYscale = screenHeight * clamp<float>(uiSize.scale.height, 0, 1);
+        float screenXscale = parentRectangle.width * clamp(uiSize.scale.width, 0, 1);
+        float screenYscale = parentRectangle.height * clamp(uiSize.scale.height, 0, 1);
 
         Scaling resultSize = {
             screenXscale + uiSize.offset.width,
-            screenYscale + uiSize.offset.height
-        };
+            screenYscale + uiSize.offset.height};
 
-        float screenXAnchor = screenWidth * clamp<float>(uiAnchor.screen.x, 0, 1);
-        float screenYAnchor = screenHeight * clamp<float>(uiAnchor.screen.y, 0, 1);
+        if (location.maxSize.width != -1 && location.minSize.width != -1)
+        {
+            resultSize = {
+                clamp(screenXscale + uiSize.offset.width, parentRectangle.width * location.minSize.width, parentRectangle.width * location.maxSize.width),
+                clamp(screenYscale + uiSize.offset.height, parentRectangle.height * location.minSize.height, parentRectangle.height * location.maxSize.width)
+            };
+        }
 
-        float localXAnchor = resultSize.width * clamp<float>(uiAnchor.local.x, 0, 1);
-        float localYAnchor = resultSize.height * clamp<float>(uiAnchor.local.y, 0, 1);
+        float screenXAnchor = parentRectangle.width * clamp(uiAnchor.screen.x, 0, 1);
+        float screenYAnchor = parentRectangle.height * clamp(uiAnchor.screen.y, 0, 1);
+
+        float localXAnchor = resultSize.width * clamp(uiAnchor.local.x, 0, 1);
+        float localYAnchor = resultSize.height * clamp(uiAnchor.local.y, 0, 1);
 
         return (Rectangle){
-            screenXAnchor - localXAnchor + location.position.x,
-            screenYAnchor - localYAnchor + location.position.y,
+            screenXAnchor - localXAnchor + location.position.x + parentRectangle.x,
+            screenYAnchor - localYAnchor + location.position.y + parentRectangle.y,
             resultSize.width,
             resultSize.height};
     }
@@ -120,6 +138,7 @@ public:
 
 private:
     bool visible = true;
+    UIElement *parentBounds = nullptr;
 };
 
 class UIButton : public UIElement
@@ -134,7 +153,7 @@ public:
     {
         Scaling buttonSizeOffset = location.size.offset;
         Color backgroundColor = IsMouseOver() ? DARKGRAY : LIGHTGRAY;
-        int textLength = (int)(sizeof(text) / sizeof(text[0]));
+        int textLength = static_cast<int>(sizeof(text) / sizeof(text[0]));
         int buttonWidth = buttonSizeOffset.width;
 
         if (buttonSizeOffset.width < buttonSizeOffset.height * textLength)
@@ -183,6 +202,13 @@ public:
     UIContainer(UIPosition startLocation, const map<std::string, UIElement *> elements)
         : UIElement(startLocation), children(elements)
     {
+        for (auto elementPair : elements)
+        {
+            if (elementPair.second)
+            {
+                elementPair.second->setParentBounds(this);
+            }
+        }
     }
 
     UIElement *getElementById(std::string identificator)

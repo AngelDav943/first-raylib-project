@@ -6,6 +6,7 @@
 
 #include "../Utilities/CameraController.h"
 #include "../Utilities/ElementsUI.h"
+#include "../Utilities/SceneObject.h"
 
 class TestScene : public Scene
 {
@@ -17,8 +18,9 @@ private:
     Texture2D book_texture;
     Texture2D tile_texture;
 
-    Model book;
-    Vector3 bookPosition;
+    // Model book;
+    // Vector3 bookPosition;
+    // BoundingBox bookBBox;
 
     Model plane;
     Vector2 center;
@@ -37,15 +39,25 @@ public:
         }
 
         CamController = CameraController();
+        SetMainCamera(&(CamController.currentCamera));
 
         // Loads textures
         book_texture = LoadTexture("assets/textures/book_texture.png");
         tile_texture = LoadTexture("assets/textures/blueprint_tiles.png");
 
         // Loads the book's models
-        book = LoadModel("assets/models/book.obj");
-        bookPosition = {0.0f, 0.0f, 0.0f};
-        book.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = book_texture;
+        // book = LoadModel("assets/models/book.obj");
+        // bookPosition = {0.0f, 0.0f, 0.0f};
+        // book.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = book_texture;
+
+        // space.AddObject("book", new SceneObject(LoadModel("assets/models/book.obj")) );
+        // space.AddObject("book", new SceneObject( LoadModelFromMesh(GenMeshCone(10, 10, 5)) ) );
+
+        space.AddObject(
+            "book",
+            new SceneObject( LoadModel("assets/models/book.obj") )
+        );
+        space.GetElementById<SceneObject>("book")->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = book_texture;
 
         plane = LoadModelFromMesh(GenMeshPlane(50, 50, 1, 1));
         plane.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = tile_texture;
@@ -60,21 +72,24 @@ public:
                           Vector2{0.5f, 0.5f}  // Screen anchor
                       },
                       Size{
-                          Scaling{400, 0}, // Offset
+                          Scaling{500, 0}, // Offset
                           Scaling{0, 1}    // Scale
-                      }},
+                      },
+                      Scaling{1, 1}, // Max size
+                      Scaling{0, 0}  // Min size
+                  },
                   // Children
                   {{"resumeButton",
                     new UIButton(
                         UIPosition{
                             Vector2{0, -5}, // Offset position
                             Anchor{
-                                Vector2{0.5f, 1},    // Local anchor
-                                Vector2{0.5f, 0.5f}, // Screen anchor
+                                Vector2{0.0f, 1},    // Local anchor
+                                Vector2{0.0f, 0.5f}, // Screen anchor
                             },
                             Size{
-                                Scaling{400, 50}, // Offset
-                                Scaling{0}        // Scale
+                                Scaling{0, 50}, // Offset
+                                Scaling{1, 0}   // Scale
                             }},
                         "Resume")},
                    {"menuButton",
@@ -86,18 +101,14 @@ public:
                                 Vector2{0.5f, 0.5f}, // Screen anchor
                             },
                             Size{
-                                Scaling{400, 50}, // Offset
-                                Scaling{0}        // Scale
+                                Scaling{0, 50}, // Offset
+                                Scaling{1, 0}   // Scale
                             }},
                         "Back to menu")}}))
             ->setVisible(false);
     }
 
-    void Update() {}
-
-    // Game logic update after Drawing
-    void LateUpdate() override
-    {
+    void Update() override {
         if (IsCursorHidden())
         {
             CamController.Update();
@@ -112,6 +123,11 @@ public:
             else
                 DisableCursor();
         }
+    }
+
+    // Game logic update after Drawing
+    void LateUpdate() override
+    {
 
         UIContainer *pauseContainer = ui.GetElementById<UIContainer>("pauseMenu");
         if (IsKeyPressed(KEY_ESCAPE))
@@ -141,21 +157,11 @@ public:
         }
     }
 
-    void Draw() override
-    {
+    void DrawEarly() override {
         DrawRectangle(0, 0, GetRenderWidth(), GetRenderHeight(), background);
+    }
 
-        BeginMode3D(CamController.currentCamera); // Started 3D Drawing
-
-        DrawModel(plane, (Vector3){0.0f, -2.0f, 0.0f}, 1.0f, WHITE);
-
-        // DrawCube(camera.target, 0.2f, 0.2f, 0.2f, BLUE);
-
-        DrawCube((Vector3){5.0f, -1.75f, 5.0f}, 0.5f, 0.5f, 0.5f, ORANGE);
-        DrawCube((Vector3){-5.0f, -1.5f, -5.0f}, 1.0f, 1.0f, 1.0f, RED);
-        DrawModel(book, bookPosition, 1.0f, WHITE); // Draws the book model
-
-        EndMode3D(); // Stopped 3D Drawing
+    void Draw() override {
 
         DrawRectangle(50, GetScreenHeight() - 150, 100, 100, ORANGE);
 
@@ -176,10 +182,27 @@ public:
         }
     }
 
+    void Draw3D() override
+    {
+        DrawModel(plane, (Vector3){0.0f, -2.0f, 0.0f}, 1.0f, WHITE);
+
+        // DrawCube(camera.target, 0.2f, 0.2f, 0.2f, BLUE);
+
+        DrawCube((Vector3){5.0f, -1.75f, 5.0f}, 0.5f, 0.5f, 0.5f, ORANGE);
+        DrawCube((Vector3){-5.0f, -1.5f, -5.0f}, 1.0f, 1.0f, 1.0f, RED);
+        // DrawModel(book, bookPosition, 1.0f, WHITE); // Draws the book model
+
+        // bookObject->Draw();
+        // bookObject->position.y = bookObject->position.y - (1 * GetFrameTime());
+        // BoundingBox bookBBox = bookObject->getBoundingBox();
+        // DrawBoundingBox(bookBBox, RED);
+    }
+
     // Unload game assets
     void Unload() override
     {
-        UnloadModel(book);
+        // delete bookObject;
+        // UnloadModel(book);
         UnloadModel(plane);
         UnloadTexture(book_texture);
         UnloadTexture(tile_texture);

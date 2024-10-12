@@ -2,6 +2,7 @@
 #define SCENEMANAGER_H
 
 #include "../Scene.h"
+#include "ObjectManager.h"
 #include <map>
 #include <memory>
 #include <stack>
@@ -23,6 +24,7 @@ public:
         if (loaded)
         {
             Scene *loadedScene = savedScenes.at(currentScene).get();
+            loadedScene->space.Unload();
             loadedScene->ui.Unload();
             loadedScene->Unload();
         }
@@ -32,6 +34,7 @@ public:
         if (newScene)
         {
             started = false;
+
             newScene->Start();
             loaded = true;
         }
@@ -48,6 +51,7 @@ public:
         {
             Scene *loadedScene = savedScenes.at(currentScene).get();
             loadedScene->ui.Update();
+            loadedScene->space.Update();
             loadedScene->Update();
         }
     }
@@ -67,8 +71,34 @@ public:
         {
             started = true;
             Scene *loadedScene = savedScenes.at(currentScene).get();
+            loadedScene->DrawEarly();
+            if (loadedScene->hasCamera() == true && loadedScene->camera3D != nullptr)
+            {
+                BeginMode3D(*(loadedScene->camera3D));
+                loadedScene->Draw3D();
+                loadedScene->space.Draw();
+                EndMode3D();
+            }
             loadedScene->Draw();
             loadedScene->ui.Draw();
+
+            if (loadedScene->camera3D != nullptr && false) // for debugging camera and stuff
+            {
+                Camera3D current = *loadedScene->camera3D;
+                list<string> texts = {
+                    ("TargetX: " + to_string(current.target.x)),
+                    ("TargetZ: " + to_string(current.target.z)),
+                    ("X: " + to_string(current.position.x)),
+                    ("Y: " + to_string(current.position.y)),
+                    ("Z: " + to_string(current.position.z))};
+
+                int i = 0;
+                for (string text : texts)
+                {
+                    i++;
+                    DrawText(text.c_str(), 20, 20 + (i * 25), 20, RED);
+                }
+            }
         }
     }
 

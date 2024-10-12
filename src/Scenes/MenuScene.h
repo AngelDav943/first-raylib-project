@@ -36,7 +36,10 @@ public:
                     Size{
                         Scaling{500, 50}, // Offset
                         Scaling{0}        // Scale
-                    }},
+                    },
+                    Scaling{1, 1}, // Max size
+                    Scaling{0, 0}  // Min size
+                },
                 "Toggle start button visibility"));
 
         ui.AddElement(
@@ -51,7 +54,10 @@ public:
                     Size{
                         Scaling{500, 50}, // Offset
                         Scaling{0},       // Scale
-                    }},
+                    },
+                    Scaling{1, 1}, // Max size
+                    Scaling{0, 0}  // Min size
+                },
                 "Play"));
 
         ui.AddElement(
@@ -70,8 +76,8 @@ public:
                 "Quit"));
     }
 
-    // Game logic update
-    void Update() override
+    // Game logic update after drawing
+    void LateUpdate() override
     {
         UIButton *startButton = ui.GetElementById<UIButton>("start");
         if (ui.GetElementById<UIButton>("test")->hasClicked())
@@ -90,7 +96,7 @@ public:
         }
     }
 
-    void LateUpdate() {}
+    void Update() override {}
 
     int tileSpeed = 20;
     Vector2 tileOffset = {0};
@@ -133,9 +139,11 @@ public:
         }
     }
 
+    void DrawEarly() override {}
+    void Draw3D() override {}
+
     void Unload() override
     {
-        // Unload game assets
         UnloadTexture(tile_texture);
     }
 };
