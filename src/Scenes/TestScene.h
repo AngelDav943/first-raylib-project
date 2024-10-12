@@ -5,6 +5,7 @@
 #include <raymath.h>
 
 #include "../Utilities/CameraController.h"
+#include "../Utilities/ElementsUI.h"
 
 class TestScene : public Scene
 {
@@ -13,7 +14,7 @@ private:
 
     CameraController CamController;
 
-    Texture2D book_texture = LoadTexture("assets/textures/book_texture.png");
+    Texture2D book_texture;
     Texture2D tile_texture;
 
     Model book;
@@ -23,14 +24,14 @@ private:
     Vector2 center;
 
 public:
-
     // Initialize game assets
     void Start() override
     {
         // Calculate the center position
         center = {GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
         // Set the mouse position to the center
-        if (IsCursorOnScreen()) {
+        if (IsCursorOnScreen())
+        {
             SetMousePosition(center.x, center.y);
             DisableCursor();
         }
@@ -38,7 +39,7 @@ public:
         CamController = CameraController();
 
         // Loads textures
-        // book_texture = LoadTexture("assets/textures/book_texture.png");
+        book_texture = LoadTexture("assets/textures/book_texture.png");
         tile_texture = LoadTexture("assets/textures/blueprint_tiles.png");
 
         // Loads the book's models
@@ -48,10 +49,54 @@ public:
 
         plane = LoadModelFromMesh(GenMeshPlane(50, 50, 1, 1));
         plane.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = tile_texture;
+
+        ui.AddElement(
+              "pauseMenu",
+              new UIContainer(
+                  UIPosition{
+                      Vector2{0, 0}, // Offset position
+                      Anchor{
+                          Vector2{0.5f, 0.5f}, // Local anchor
+                          Vector2{0.5f, 0.5f}  // Screen anchor
+                      },
+                      Size{
+                          Scaling{400, 0}, // Offset
+                          Scaling{0, 1}    // Scale
+                      }},
+                  // Children
+                  {{"resumeButton",
+                    new UIButton(
+                        UIPosition{
+                            Vector2{0, -5}, // Offset position
+                            Anchor{
+                                Vector2{0.5f, 1},    // Local anchor
+                                Vector2{0.5f, 0.5f}, // Screen anchor
+                            },
+                            Size{
+                                Scaling{400, 50}, // Offset
+                                Scaling{0}        // Scale
+                            }},
+                        "Resume")},
+                   {"menuButton",
+                    new UIButton(
+                        UIPosition{
+                            Vector2{0, 5}, // Offset position
+                            Anchor{
+                                Vector2{0.5f, 0},    // Local anchor
+                                Vector2{0.5f, 0.5f}, // Screen anchor
+                            },
+                            Size{
+                                Scaling{400, 50}, // Offset
+                                Scaling{0}        // Scale
+                            }},
+                        "Back to menu")}}))
+            ->setVisible(false);
     }
 
-    // Game logic update
-    void Update() override
+    void Update() {}
+
+    // Game logic update after Drawing
+    void LateUpdate() override
     {
         if (IsCursorHidden())
         {
@@ -60,12 +105,39 @@ public:
         }
 
         // Toggles camera controls
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) || IsKeyPressed(KEY_ESCAPE))
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
             if (IsCursorHidden())
                 EnableCursor();
             else
                 DisableCursor();
+        }
+
+        UIContainer *pauseContainer = ui.GetElementById<UIContainer>("pauseMenu");
+        if (IsKeyPressed(KEY_ESCAPE))
+        {
+            if (pauseContainer->isVisible() == false)
+            {
+                EnableCursor();
+                pauseContainer->setVisible(true);
+            }
+            else
+            {
+                DisableCursor();
+                pauseContainer->setVisible(false);
+            }
+        }
+
+        // Pause menu logic
+        if (pauseContainer->getElementById("resumeButton")->hasClicked())
+        {
+            DisableCursor();
+            pauseContainer->setVisible(false);
+        }
+
+        if (pauseContainer->getElementById("menuButton")->hasClicked())
+        {
+            globalSceneManager.LoadScene("Menu");
         }
     }
 
