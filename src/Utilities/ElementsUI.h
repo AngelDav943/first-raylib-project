@@ -55,8 +55,8 @@ class UIElement
 public:
     UIPosition location;
 
-    UIElement(UIPosition startLocation)
-        : location(startLocation), visible(true) {}
+    UIElement(UIPosition startLocation, bool isVisible = true)
+        : location(startLocation), visible(isVisible) {}
 
     virtual void Draw() = 0;
     virtual void Update() = 0;
@@ -108,7 +108,7 @@ public:
 
     bool IsMouseOver()
     {
-        if (visible == false)
+        if (isVisible() == false)
         {
             return false;
         }
@@ -126,6 +126,10 @@ public:
 
     bool isVisible()
     {
+        if (parentBounds != nullptr)
+        {
+            return parentBounds->isVisible();
+        }
         return visible;
     }
 
