@@ -2,7 +2,7 @@
 #define MENUSCENE_H
 
 #include "../Scene.h"
-#include <bits/stdc++.h>
+#include <string>
 #include <list>
 #include <memory>
 

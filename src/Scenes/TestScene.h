@@ -18,11 +18,6 @@ private:
     Texture2D book_texture;
     Texture2D tile_texture;
 
-    // Model book;
-    // Vector3 bookPosition;
-    // BoundingBox bookBBox;
-
-    Model plane;
     Vector2 center;
 
 public:
@@ -45,22 +40,46 @@ public:
         book_texture = LoadTexture("assets/textures/book_texture.png");
         tile_texture = LoadTexture("assets/textures/blueprint_tiles.png");
 
-        // Loads the book's models
-        // book = LoadModel("assets/models/book.obj");
-        // bookPosition = {0.0f, 0.0f, 0.0f};
-        // book.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = book_texture;
-
-        // space.AddObject("book", new SceneObject(LoadModel("assets/models/book.obj")) );
-        // space.AddObject("book", new SceneObject( LoadModelFromMesh(GenMeshCone(10, 10, 5)) ) );
+        space.AddObject(
+            "cone_test",
+            new SceneObject(
+                LoadModelFromMesh(GenMeshCone(5, 5, 7)), // model
+                Vector3{10, 0, 10}                       // initial position
+                ));
+        space.GetElementById<SceneObject>("cone_test")->model.materials->maps->texture = tile_texture;
 
         space.AddObject(
-            "book",
-            new SceneObject( LoadModel("assets/models/book.obj") )
-        );
-        space.GetElementById<SceneObject>("book")->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = book_texture;
+                 "baseplane",
+                 new SceneObject(
+                     LoadModelFromMesh(GenMeshPlane(50, 50, 1, 1)), // model
+                     Vector3{0.0f, -2.0f, 0.0f}                     // initial position
+                     ))
+            ->model.materials[0]
+            .maps[MATERIAL_MAP_DIFFUSE]
+            .texture = tile_texture;
 
-        plane = LoadModelFromMesh(GenMeshPlane(50, 50, 1, 1));
-        plane.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = tile_texture;
+        space.AddObject(
+            "cube1", // name
+            new SceneObject(
+                LoadModelFromMesh(GenMeshCube(0.5f, 0.5f, 0.5f)), // model
+                Vector3{5.0f, -1.75f, 5.0f},                      // initial position
+                ORANGE                                            // base color
+                ));
+
+        space.AddObject(
+            "cube2", // name
+            new SceneObject(
+                LoadModelFromMesh(GenMeshCube(1, 1, 1)), // model
+                Vector3{-5.0f, -1.5f, -5.0f},            // initial position
+                RED                                      // base color
+                ));
+
+        space.AddObject(
+                 "book",
+                 new SceneObject(LoadModel("assets/models/book.obj")))
+            ->model.materials[0]
+            .maps[MATERIAL_MAP_DIFFUSE]
+            .texture = book_texture;
 
         ui.AddElement(
               "pauseMenu",
@@ -108,7 +127,8 @@ public:
             ->setVisible(false);
     }
 
-    void Update() override {
+    void Update() override
+    {
         if (IsCursorHidden())
         {
             CamController.Update();
@@ -128,7 +148,6 @@ public:
     // Game logic update after Drawing
     void LateUpdate() override
     {
-
         UIContainer *pauseContainer = ui.GetElementById<UIContainer>("pauseMenu");
         if (IsKeyPressed(KEY_ESCAPE))
         {
@@ -157,11 +176,13 @@ public:
         }
     }
 
-    void DrawEarly() override {
+    void DrawEarly() override
+    {
         DrawRectangle(0, 0, GetRenderWidth(), GetRenderHeight(), background);
     }
 
-    void Draw() override {
+    void Draw() override
+    {
 
         DrawRectangle(50, GetScreenHeight() - 150, 100, 100, ORANGE);
 
@@ -184,26 +205,11 @@ public:
 
     void Draw3D() override
     {
-        DrawModel(plane, (Vector3){0.0f, -2.0f, 0.0f}, 1.0f, WHITE);
-
-        // DrawCube(camera.target, 0.2f, 0.2f, 0.2f, BLUE);
-
-        DrawCube((Vector3){5.0f, -1.75f, 5.0f}, 0.5f, 0.5f, 0.5f, ORANGE);
-        DrawCube((Vector3){-5.0f, -1.5f, -5.0f}, 1.0f, 1.0f, 1.0f, RED);
-        // DrawModel(book, bookPosition, 1.0f, WHITE); // Draws the book model
-
-        // bookObject->Draw();
-        // bookObject->position.y = bookObject->position.y - (1 * GetFrameTime());
-        // BoundingBox bookBBox = bookObject->getBoundingBox();
-        // DrawBoundingBox(bookBBox, RED);
     }
 
     // Unload game assets
     void Unload() override
     {
-        // delete bookObject;
-        // UnloadModel(book);
-        UnloadModel(plane);
         UnloadTexture(book_texture);
         UnloadTexture(tile_texture);
     }

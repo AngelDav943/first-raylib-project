@@ -1,9 +1,12 @@
 #ifndef UIELEMENTS_H
 #define UIELEMENTS_H
 
-#include <bits/stdc++.h>
 #include <math.h>
-#include <vector>
+#include <functional>
+#include <list>
+#include <map>
+#include <string>
+#include <cstring>
 #include <memory>
 #include <raylib.h>
 
@@ -57,6 +60,7 @@ public:
 
     UIElement(UIPosition startLocation, bool isVisible = true)
         : location(startLocation), visible(isVisible) {}
+    virtual ~UIElement() {}
 
     virtual void Draw() = 0;
     virtual void Update() = 0;
@@ -69,7 +73,7 @@ public:
 
     Rectangle getBounds()
     {
-        Rectangle parentRectangle = { 0, 0, GetRenderWidth(), GetRenderHeight()};
+        Rectangle parentRectangle = { 0, 0, static_cast<float>(GetRenderWidth()), static_cast<float>(GetRenderHeight())};
         if (parentBounds != nullptr)
         {
             parentRectangle = parentBounds->getBounds();
@@ -157,7 +161,7 @@ public:
     {
         Scaling buttonSizeOffset = location.size.offset;
         Color backgroundColor = IsMouseOver() ? DARKGRAY : LIGHTGRAY;
-        int textLength = static_cast<int>(sizeof(text) / sizeof(text[0]));
+        int textLength = static_cast<int>(strlen(text));
         int buttonWidth = buttonSizeOffset.width;
 
         if (buttonSizeOffset.width < buttonSizeOffset.height * textLength)
@@ -201,8 +205,6 @@ private:
 class UIContainer : public UIElement
 {
 public:
-    // std::vector<UIElement *> children;
-
     UIContainer(UIPosition startLocation, const map<std::string, UIElement *> elements)
         : UIElement(startLocation), children(elements)
     {

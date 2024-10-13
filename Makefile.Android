@@ -26,8 +26,8 @@ PLATFORM               ?= PLATFORM_ANDROID
 RAYLIB_PATH            ?= ..\..
 
 # Define Android architecture (armeabi-v7a, arm64-v8a, x86, x86-64) and API version
-ANDROID_ARCH           ?= ARM
-ANDROID_API_VERSION     = 21
+ANDROID_ARCH           ?= ARM64
+ANDROID_API_VERSION     = 30
 ifeq ($(ANDROID_ARCH),ARM)
     ANDROID_ARCH_NAME   = armeabi-v7a
 endif
@@ -38,10 +38,10 @@ endif
 # Required path variables
 
 # old ANDROID_TOOLCHAIN = C:/android_toolchain_$(ANDROID_ARCH)_API$(ANDROID_API_VERSION)
-JAVA_HOME              ?= C:/JavaJDK
+JAVA_HOME              ?= D:/Program Files/Java/jdk-15
 ANDROID_HOME            = C:/android-sdk
 ANDROID_TOOLCHAIN       = C:/android-ndk/toolchains/llvm/prebuilt/windows-x86_64
-ANDROID_BUILD_TOOLS     = $(ANDROID_HOME)/build-tools/28.0.1
+ANDROID_BUILD_TOOLS     = $(ANDROID_HOME)/build-tools/34.0.0
 ANDROID_PLATFORM_TOOLS  = $(ANDROID_HOME)/platform-tools
 
 # Android project configuration variables
@@ -84,7 +84,7 @@ ifeq ($(ANDROID_ARCH),ARM)
     AR = $(ANDROID_TOOLCHAIN)/bin/arm-linux-androideabi-ar
 endif
 ifeq ($(ANDROID_ARCH),ARM64)
-    CC = $(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android-clang++
+    CC = $(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android${ANDROID_API_VERSION}-clang++
     AR = $(ANDROID_TOOLCHAIN)/bin/aarch64-linux-android-ar
 endif
 
@@ -107,9 +107,10 @@ LDFLAGS = -Wl,-soname,lib$(PROJECT_LIBRARY_NAME).so -Wl,--exclude-libs,libatomic
 LDFLAGS += -Wl,--build-id -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--warn-shared-textrel -Wl,--fatal-warnings
 LDFLAGS += -u ANativeActivity_onCreate
 LDFLAGS += -L. -L$(PROJECT_BUILD_PATH)/obj -L$(PROJECT_BUILD_PATH)/lib/$(ANDROID_ARCH_NAME) -L$(ANDROID_TOOLCHAIN)\sysroot\usr\lib
+LDFLAGS += -fPIC
 
 # Define any libraries to link into executable
-LDLIBS = -lm -lc -lraylib -llog -landroid -lEGL -lGLESv2 -lOpenSLES -ldl
+LDLIBS = -lm -lc++ -lraylib -llog -landroid -lEGL -lGLESv2 -lOpenSLES -ldl
 
 # Generate target objects list from PROJECT_SOURCE_FILES
 OBJS = $(patsubst %.cpp, $(PROJECT_BUILD_PATH)/obj/%.o, $(PROJECT_SOURCE_FILES))
@@ -170,16 +171,21 @@ copy_project_resources:
 	copy "$(APP_ICON_HDPI)" "$(PROJECT_BUILD_PATH)\res\drawable-hdpi\icon.png" /Y
 	@echo ^<?xml version="1.0" encoding="utf-8"?^> > $(PROJECT_BUILD_PATH)\res\values\strings.xml
 	@echo ^<resources^> >> $(PROJECT_BUILD_PATH)\res\values\strings.xml
-	@echo ^<string name="app_name">$(APP_LABEL_NAME)^</string^> >> $(PROJECT_BUILD_PATH)\res\values\strings.xml
+	@echo ^<string name="app_name"^>$(APP_LABEL_NAME)^</string^> >> "$(PROJECT_BUILD_PATH)\res\values\strings.xml"
 	@echo ^</resources^> >> $(PROJECT_BUILD_PATH)\res\values\strings.xml
 
 # Generate loader script for Java
 generate_loader_script:
-	echo package com.$(APP_COMPANY_NAME).$(APP_PRODUCT_NAME); > "$(PROJECT_BUILD_PATH)\src\com\$(APP_COMPANY_NAME)\$(APP_PRODUCT_NAME)\Loader.java"
-	echo import android.app.NativeActivity; >> "$(PROJECT_BUILD_PATH)\src\com\$(APP_COMPANY_NAME)\$(APP_PRODUCT_NAME)\Loader.java"
-	echo public class Loader extends NativeActivity { >> "$(PROJECT_BUILD_PATH)\src\com\$(APP_COMPANY_NAME)\$(APP_PRODUCT_NAME)\Loader.java"
-	echo     static { System.loadLibrary("$(PROJECT_LIBRARY_NAME)"); } >> "$(PROJECT_BUILD_PATH)\src\com\$(APP_COMPANY_NAME)\$(APP_PRODUCT_NAME)\Loader.java"
-	echo } >> "$(PROJECT_BUILD_PATH)\src\com\$(APP_COMPANY_NAME)\$(APP_PRODUCT_NAME)\Loader.java"
+	@echo package com.$(APP_COMPANY_NAME).$(APP_PRODUCT_NAME); > "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
+	@echo. >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
+	@echo public class NativeLoader extends android.app.NativeActivity { >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
+	@echo     static { >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
+ifeq ($(RAYLIB_LIBTYPE),SHARED)
+	@echo         System.loadLibrary("raylib"); >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
+endif
+	@echo         System.loadLibrary("$(PROJECT_LIBRARY_NAME)"); >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
+	@echo     } >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
+	@echo } >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
 
 # Generate AndroidManifest.xml with all the required options
 # NOTE: Probably not the bet way to generate this file... but it works.
@@ -212,35 +218,68 @@ generate_apk_keystore:
 
 # Configure project packaging
 config_project_package:
-	@echo > $(PROJECT_BUILD_PATH)\proguard-rules.pro
+	$(ANDROID_BUILD_TOOLS)/aapt package -f -m -S $(PROJECT_BUILD_PATH)/res -J $(PROJECT_BUILD_PATH)/src -M $(PROJECT_BUILD_PATH)/AndroidManifest.xml -I $(ANDROID_HOME)/platforms/android-$(ANDROID_API_VERSION)/android.jar
 
 # Compile project code into a shared library: lib/lib$(PROJECT_LIBRARY_NAME).so
 compile_project_code: $(OBJS)
 	$(CC) -o "$(PROJECT_BUILD_PATH)/lib/$(ANDROID_ARCH_NAME)/lib$(PROJECT_LIBRARY_NAME).so" $(OBJS) -shared $(INCLUDE_PATHS) $(LDFLAGS) $(LDLIBS)
 
+# Compile all .c files required into object (.o) files
+# NOTE: Those files will be linked into a shared library
+$(PROJECT_BUILD_PATH)/obj/%.o:%.c
+	$(CC) -c $^ -o $@ $(INCLUDE_PATHS) $(CFLAGS) --sysroot=$(ANDROID_TOOLCHAIN)/sysroot
+
 # Compile project class
 compile_project_class:
-	@javac -sourcepath $(PROJECT_BUILD_PATH)\src -d $(PROJECT_BUILD_PATH)\bin $(PROJECT_BUILD_PATH)\src\com\$(APP_COMPANY_NAME)\$(APP_PRODUCT_NAME)\Loader.java
+	"$(JAVA_HOME)/bin/javac" -verbose -source 15 -target 15 -d $(PROJECT_BUILD_PATH)/obj -classpath $(ANDROID_HOME)/platforms/android-$(ANDROID_API_VERSION)/android.jar;$(PROJECT_BUILD_PATH)/obj -sourcepath $(PROJECT_BUILD_PATH)/src $(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/R.java $(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java
 
-# Compile project class dex
+# Compile .class files into Dalvik executable bytecode (.dex)
+# NOTE: Since Android 5.0, Dalvik interpreter (JIT) has been replaced by ART (AOT)
+CLASS_FILES = $(powershell -Command "Get-ChildItem -Recurse -Filter '*.class' '$(PROJECT_BUILD_PATH)/obj' | ForEach-Object { $_.FullName }")
 compile_project_class_dex:
-	@d8 --output $(PROJECT_BUILD_PATH)\bin --classpath $(ANDROID_HOME)/platforms/android-$(ANDROID_API_VERSION)/android.jar $(PROJECT_BUILD_PATH)\bin\Loader.class
+	"$(ANDROID_BUILD_TOOLS)/d8" $(CLASS_FILES) --output "$(PROJECT_BUILD_PATH)/bin"
 
-# Create project APK package
+# Create Android APK package: bin/$(PROJECT_NAME).unsigned.apk
+# NOTE: Requires compiled classes.dex and lib$(PROJECT_LIBRARY_NAME).so
+# NOTE: Use -A resources to define additional directory in which to find raw asset files
 create_project_apk_package:
-	@cd $(PROJECT_BUILD_PATH) && aapt package -f -m -F $(PROJECT_BUILD_PATH)\$(PROJECT_NAME).apk -S res -M AndroidManifest.xml -I $(ANDROID_HOME)/platforms/android-$(ANDROID_API_VERSION)/android.jar
+	$(ANDROID_BUILD_TOOLS)/aapt package -f -M $(PROJECT_BUILD_PATH)/AndroidManifest.xml -S $(PROJECT_BUILD_PATH)/res -A $(PROJECT_BUILD_PATH)/assets -I $(ANDROID_HOME)/platforms/android-$(ANDROID_API_VERSION)/android.jar -F $(PROJECT_BUILD_PATH)/bin/$(PROJECT_NAME).unsigned.apk $(PROJECT_BUILD_PATH)/bin
+	cd $(PROJECT_BUILD_PATH) && $(ANDROID_BUILD_TOOLS)/aapt add bin/$(PROJECT_NAME).unsigned.apk lib/$(ANDROID_ARCH_NAME)/lib$(PROJECT_LIBRARY_NAME).so $(PROJECT_SHARED_LIBS)
 
-# Sign project APK package
+# Create signed APK package using generated Key: bin/$(PROJECT_NAME).signed.apk
 sign_project_apk_package:
-	@cd $(PROJECT_BUILD_PATH) && apksigner sign --ks keystore.jks --ks-pass pass:$(APP_KEYSTORE_PASS) --out $(PROJECT_BUILD_PATH)\$(PROJECT_NAME)-signed.apk $(PROJECT_BUILD_PATH)\$(PROJECT_NAME).apk
+	$(JAVA_HOME)/bin/jarsigner -keystore $(PROJECT_BUILD_PATH)/$(PROJECT_NAME).keystore -storepass $(APP_KEYSTORE_PASS) -keypass $(APP_KEYSTORE_PASS) -signedjar $(PROJECT_BUILD_PATH)/bin/$(PROJECT_NAME).signed.apk $(PROJECT_BUILD_PATH)/bin/$(PROJECT_NAME).unsigned.apk $(PROJECT_NAME)Key
 
-# Zipalign project APK package
+# Create zip-aligned APK package: $(PROJECT_NAME).apk
 zipalign_project_apk_package:
-	@cd $(PROJECT_BUILD_PATH) && zipalign -v 4 $(PROJECT_BUILD_PATH)\$(PROJECT_NAME)-signed.apk $(PROJECT_BUILD_PATH)\$(PROJECT_NAME).apk
+	$(ANDROID_BUILD_TOOLS)/zipalign -f 4 $(PROJECT_BUILD_PATH)/bin/$(PROJECT_NAME).signed.apk $(PROJECT_NAME).apk
 
-# Clean all temporary files and folders
+# Install $(PROJECT_NAME).apk to default emulator/device
+# NOTE: Use -e (emulator) or -d (device) parameters if required
+install:
+	$(ANDROID_PLATFORM_TOOLS)/adb install --abi $(ANDROID_ARCH_NAME) -rds $(PROJECT_NAME).apk
+
+# Check supported ABI for the device (armeabi-v7a, arm64-v8a, x86, x86_64)
+check_device_abi:
+	$(ANDROID_PLATFORM_TOOLS)/adb shell getprop ro.product.cpu.abi
+
+# Monitorize output log coming from device, only raylib tag
+logcat:
+	$(ANDROID_PLATFORM_TOOLS)/adb logcat -c
+	$(ANDROID_PLATFORM_TOOLS)/adb logcat raylib:V *:S
+
+# Install and monitorize $(PROJECT_NAME).apk to default emulator/device
+deploy:
+	$(ANDROID_PLATFORM_TOOLS)/adb install -r $(PROJECT_NAME).apk
+	$(ANDROID_PLATFORM_TOOLS)/adb logcat -c
+	$(ANDROID_PLATFORM_TOOLS)/adb logcat raylib:V *:S
+
+#$(ANDROID_PLATFORM_TOOLS)/adb logcat *:W
+
+# Clean everything
 clean:
-	del /Q $(PROJECT_BUILD_PATH)\*
-	rmdir /S /Q $(PROJECT_BUILD_PATH)
+	del $(PROJECT_BUILD_PATH)\* /f /s /q
+	rmdir $(PROJECT_BUILD_PATH) /s /q
+	@echo Cleaning done
 
 .PHONY: all clean

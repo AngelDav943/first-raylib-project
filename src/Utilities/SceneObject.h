@@ -26,7 +26,7 @@ public:
     }
 
     virtual void Update() = 0; // Logic before Draw
-    virtual void Draw() = 0; // Draw logic
+    virtual void Draw() = 0;   // Draw logic
 
 private:
     BoundingBox boundBox;
@@ -35,16 +35,28 @@ private:
 class SceneObject : public BaseSceneObject
 {
 public:
-    SceneObject(Model mdl) : BaseSceneObject(mdl) {}
+    /*SceneObject(Model mdl, Vector3 initialPos = {0})
+        : BaseSceneObject(mdl)
+    {
+        position = initialPos;
+    }*/
+
+    SceneObject(Model mdl, Vector3 initialPos = {0}, Color baseColor = WHITE)
+        : BaseSceneObject(mdl)
+    {
+        position = initialPos;
+        colorBase = baseColor;
+    }
 
     void Update() override {}
 
     void Draw() override
     {
-        DrawModel(model, position, 1, WHITE);
+        DrawModel(model, position, 1, colorBase);
     }
 
 private:
+    Color colorBase;
 };
 
 #endif

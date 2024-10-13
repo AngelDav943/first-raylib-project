@@ -12,9 +12,14 @@ int main()
     constexpr int screenWidth = 800;
     constexpr int screenHeight = 600;
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "An amazing project");
+#if defined(PLATFORM_ANDROID)
+    SetConfigFlags(FLAG_FULLSCREEN_MODE);
+    InitWindow(GetScreenWidth(), GetScreenHeight(), "An amazing project");
+#else
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     SetWindowMinSize(screenWidth / 2, screenHeight / 2);
+#endif
 
     globalSceneManager.InsertScene("Menu", make_unique<MenuScene>());
     globalSceneManager.InsertScene("Test", make_unique<TestScene>());
