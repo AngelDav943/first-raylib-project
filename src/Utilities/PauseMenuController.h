@@ -1,0 +1,125 @@
+#ifndef PAUSEMENUCONTROLLER_H
+#define PAUSEMENUCONTROLLER_H
+
+#include "UIManager.h"
+#include "ElementsUI.h"
+#include "SceneManager.h"
+
+class PauseMenuController
+{
+public:
+    PauseMenuController() {}
+
+    /// @brief Initializes the Pause menu
+    /// @param ui The UI Manager used on the scene
+    void init(UIManager &ui)
+    {
+        ui.AddElement(
+              "pauseMenu",
+              new UIContainer(
+                  UIPosition{
+                      Vector2{0, 0}, // Offset position
+                      Anchor{
+                          Vector2{0.5f, 0.5f}, // Local anchor
+                          Vector2{0.5f, 0.5f}  // Screen anchor
+                      },
+                      Size{
+                          Scaling{500, 0}, // Offset
+                          Scaling{0, 1}    // Scale
+                      },
+                      Scaling{1, 1}, // Max size
+                      Scaling{0, 0}  // Min size
+                  },
+                  // Children
+                  {
+                      {"resumeButton",
+                       new UIButton(
+                           UIPosition{
+                               Vector2{0, -5}, // Offset position
+                               Anchor{
+                                   Vector2{0.0f, 1},    // Local anchor
+                                   Vector2{0.0f, 0.5f}, // Screen anchor
+                               },
+                               Size{
+                                   Scaling{0, 50}, // Offset
+                                   Scaling{1, 0}   // Scale
+                               }},
+                           "Resume")},
+                      {"menuButton",
+                       new UIButton(
+                           UIPosition{
+                               Vector2{0, 5}, // Offset position
+                               Anchor{
+                                   Vector2{0.5f, 0},    // Local anchor
+                                   Vector2{0.5f, 0.5f}, // Screen anchor
+                               },
+                               Size{
+                                   Scaling{0, 50}, // Offset
+                                   Scaling{1, 0},  // Scale
+                               }},
+                           "Back to menu")},
+                      {"quitButton",
+                       new UIButton(
+                           UIPosition{
+                               Vector2{0, 0}, // Offset position
+                               Anchor{
+                                   Vector2{0.5f, 1}, // Local anchor
+                                   Vector2{0.5f, 1}, // Screen anchor
+                               },
+                               Size{
+                                   Scaling{0, 50}, // Offset
+                                   Scaling{1, 0},  // Scale
+                               }},
+                           "Quit game")},
+                  }))
+            ->setVisible(false);
+    }
+
+    /// @brief Updates the menu, recommended to be used on `LateUpdate()`
+    /// @param ui The UI Manager used on the scene
+    /// @param sceneManager The scene manager used by the scene, usually is `globalSceneManager`
+    void UpdateMenu(UIManager &ui, SceneManager &sceneManager)
+    {
+        UIContainer *pauseContainer = ui.GetElementById<UIContainer>("pauseMenu");
+        if (IsKeyPressed(KEY_ESCAPE))
+        {
+            if (pauseContainer->isVisible() == false)
+            {
+                EnableCursor();
+                pauseContainer->setVisible(true);
+            }
+            else
+            {
+                DisableCursor();
+                pauseContainer->setVisible(false);
+            }
+        }
+
+        // Pause menu logic
+        UIButton *menuButton = pauseContainer->getElementById<UIButton>("menuButton");
+        UIButton *resumeButton = pauseContainer->getElementById<UIButton>("resumeButton");
+        UIButton *quitButton = pauseContainer->getElementById<UIButton>("quitButton");
+
+        if (resumeButton->hasClicked())
+        {
+            DisableCursor();
+            pauseContainer->setVisible(false);
+            return;
+        }
+
+        if (menuButton->hasClicked())
+        {
+            sceneManager.LoadScene("Menu");
+            return;
+        }
+
+        if (quitButton->hasClicked())
+        {
+            CloseWindow();
+            return;
+        }
+    }
+
+private:
+};
+#endif

@@ -77,7 +77,6 @@
 			"set": "cpp",
 			"unordered_set": "cpp",
 			"expected": "cpp",
-			"functional": "cpp",
 			"iterator": "cpp",
 			"numeric": "cpp",
 			"random": "cpp",

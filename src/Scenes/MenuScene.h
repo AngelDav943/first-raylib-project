@@ -61,6 +61,24 @@ public:
                 "Play"));
 
         ui.AddElement(
+            "maps",
+            new UIButton(
+                UIPosition{
+                    Vector2{0, 60}, // Offset position
+                    Anchor{
+                        Vector2{0.5f, 0},   // Local anchor
+                        Vector2{0.5f, 0.5f} // Screen anchor
+                    },
+                    Size{
+                        Scaling{500, 50}, // Offset
+                        Scaling{0},       // Scale
+                    },
+                    Scaling{1, 1}, // Max size
+                    Scaling{0, 0}  // Min size
+                },
+                "Maps test"));
+
+        ui.AddElement(
             "quit",
             new UIButton(
                 UIPosition{
@@ -80,23 +98,34 @@ public:
     void LateUpdate() override
     {
         UIButton *startButton = ui.GetElementById<UIButton>("start");
-        if (ui.GetElementById<UIButton>("test")->hasClicked())
+        UIButton *testButton = ui.GetElementById<UIButton>("test");
+        UIButton *mapsButton = ui.GetElementById<UIButton>("maps");
+        UIButton *quitButton = ui.GetElementById<UIButton>("quit");
+
+        if (testButton->hasClicked())
         {
             startButton->setVisible(startButton->isVisible() == false);
+            return;
         }
 
-        if (ui.GetElementById<UIButton>("quit")->hasClicked())
+        if (quitButton->hasClicked())
         {
             CloseWindow();
+            return;
         }
 
         if (startButton->hasClicked())
         {
             globalSceneManager.LoadScene("Test");
+            return;
+        }
+
+        if (mapsButton->hasClicked())
+        {
+            globalSceneManager.LoadScene("MapsMenu");
+            return;
         }
     }
-
-    void Update() override {}
 
     int tileSpeed = 20;
     Vector2 tileOffset = {0};
@@ -111,8 +140,6 @@ public:
 
         int tileWidthRepeats = (int)ceilf(GetScreenWidth() / tile_texture.width);
         int tileHeightRepeats = (int)ceilf(GetScreenHeight() / tile_texture.height);
-
-        DrawTexture(tile_texture, 0, 0, WHITE);
         for (int x = 0; x <= tileWidthRepeats + 1; x++)
         {
             for (int y = 0; y <= tileHeightRepeats + 1; y++)
@@ -138,9 +165,6 @@ public:
             DrawText(text.c_str(), 20, 20 + (i * 25), 20, ORANGE);
         }
     }
-
-    void DrawEarly() override {}
-    void Draw3D() override {}
 
     void Unload() override
     {

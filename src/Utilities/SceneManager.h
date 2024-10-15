@@ -35,6 +35,7 @@ public:
         {
             started = false;
 
+            newScene->ui.Load();
             newScene->Start();
             loaded = true;
         }

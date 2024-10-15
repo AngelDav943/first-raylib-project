@@ -28,23 +28,23 @@ public:
     /// @brief Runs when the scene is loaded
     virtual void Start() = 0; // Initialize scene
 
-    /// @brief Runs before the drawing functions
-    virtual void Update() = 0;
-
-    /// @brief Drawing logic inside a BeginDrawing before Draw3D
-    virtual void DrawEarly() = 0; // Drawing logic
-
-    /// @brief Drawing logic inside a BeginMode3D
-    virtual void Draw3D() = 0;
-
-    /// @brief Drawing logic inside a BeginDrawing after Draw3D
-    virtual void Draw() = 0; // Drawing logic
-
-    /// @brief Runs after the Drawing functions
-    virtual void LateUpdate() = 0; // Logic after Draw
-
     /// @brief Runs when unloading the scene
     virtual void Unload() = 0; // Logic when scene unloaded
+
+    /// @brief Runs before the drawing functions
+    virtual void Update() {};
+
+    /// @brief Drawing logic inside a BeginDrawing before Draw3D
+    virtual void DrawEarly() {}; // Drawing logic
+
+    /// @brief Drawing logic inside a BeginMode3D
+    virtual void Draw3D() {};
+
+    /// @brief Drawing logic inside a BeginDrawing after Draw3D
+    virtual void Draw() {}; // Drawing logic
+
+    /// @brief Runs after the Drawing functions
+    virtual void LateUpdate() {}; // Logic after Draw
 
 private:
     bool using3DCamera = false;

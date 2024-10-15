@@ -5,6 +5,7 @@ using namespace std;
 #include "Utilities/SceneManager.h"
 
 #include "Scenes/MenuScene.h"
+#include "Scenes/MapsMenuScene.h"
 #include "Scenes/TestScene.h"
 
 int main()
@@ -12,16 +13,16 @@ int main()
     constexpr int screenWidth = 800;
     constexpr int screenHeight = 600;
 
-    InitWindow(screenWidth, screenHeight, "An amazing project");
-#if defined(PLATFORM_ANDROID)
-    SetConfigFlags(FLAG_FULLSCREEN_MODE);
-    InitWindow(GetScreenWidth(), GetScreenHeight(), "An amazing project");
-#else
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    InitWindow(screenWidth, screenHeight, "An amazing project");
     SetWindowMinSize(screenWidth / 2, screenHeight / 2);
-#endif
+// #if defined(ANDROID)
+    // SetConfigFlags(FLAG_FULLSCREEN_MODE);
+    // InitWindow(GetScreenWidth(), GetScreenHeight(), "An amazing project");
+// #endif
 
     globalSceneManager.InsertScene("Menu", make_unique<MenuScene>());
+    globalSceneManager.InsertScene("MapsMenu", make_unique<MapsMenuScene>());
     globalSceneManager.InsertScene("Test", make_unique<TestScene>());
 
     globalSceneManager.LoadScene("Menu");
@@ -49,7 +50,7 @@ int main()
             {
                 // If it is then toggle the fullscreen and resize it back to it's original scale
                 ToggleFullscreen();
-                SetWindowSize(lastWindowSize.x, lastWindowSize.y);
+                SetWindowSize(static_cast<int>(lastWindowSize.x), static_cast<int>(lastWindowSize.y));
             }
         }
 

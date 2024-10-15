@@ -192,9 +192,14 @@ else
 	@echo "NativeLoader.java already exists, skipping generation"
 endif
 
+
+# Check if AndroidManifest.xml exists
+NATIVE_LOADER_EXISTS := $(wildcard $(PROJECT_BUILD_PATH)/AndroidManifest.xml)
+
 # Generate AndroidManifest.xml with all the required options
 # NOTE: Probably not the bet way to generate this file... but it works.
 generate_android_manifest:
+ifeq ($(NATIVE_LOADER_EXISTS),)
 	@echo ^<?xml version="1.0" encoding="utf-8"^?^> > $(PROJECT_BUILD_PATH)/AndroidManifest.xml
 	@echo ^<manifest xmlns:android="http://schemas.android.com/apk/res/android" >> $(PROJECT_BUILD_PATH)/AndroidManifest.xml
 	@echo         package="com.$(APP_COMPANY_NAME).$(APP_PRODUCT_NAME)"  >> $(PROJECT_BUILD_PATH)/AndroidManifest.xml
@@ -216,6 +221,9 @@ generate_android_manifest:
 	@echo         ^</activity^> >> $(PROJECT_BUILD_PATH)/AndroidManifest.xml
 	@echo     ^</application^> >> $(PROJECT_BUILD_PATH)/AndroidManifest.xml
 	@echo ^</manifest^> >> $(PROJECT_BUILD_PATH)/AndroidManifest.xml
+else
+	@echo "AndroidManifest.xml already exists, skipping generation"
+endif
 
 # Generate storekey for APK signing: $(PROJECT_NAME).keystore
 # NOTE: Configure here your Distinguished Names (-dname) if required!

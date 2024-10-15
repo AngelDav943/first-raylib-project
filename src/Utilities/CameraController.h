@@ -16,8 +16,8 @@ public:
         : camera_speed(6.0f), camera_sensitivity(0.25f), angleX(0), angleY(0)
     {
         currentCamera = {0};
-        currentCamera.position = (Vector3){2.0f, 1.0f, 0.0f};
-        currentCamera.up = (Vector3){0.0f, 1.0f, 0.0f};
+        currentCamera.position = {2.0f, 1.0f, 0.0f};
+        currentCamera.up = {0.0f, 1.0f, 0.0f};
         currentCamera.fovy = 60.0f;
         currentCamera.projection = CAMERA_PERSPECTIVE;
     }

@@ -1,15 +1,15 @@
 #ifndef UIELEMENTS_H
 #define UIELEMENTS_H
 
+#include <iostream>
+
 #include <math.h>
-#include <functional>
 #include <list>
 #include <map>
 #include <string>
 #include <cstring>
 #include <memory>
 #include <raylib.h>
-
 
 float clamp(const float &value, const float &min, const float &max)
 {
@@ -23,23 +23,33 @@ struct Scaling
     float height;
 };
 
+/// @brief The sizing for the UI Element ( offset in pixels and scale in percentage relative to parent size )
 struct Size
 {
     Scaling offset;
     Scaling scale;
 
-    Size(Scaling off, Scaling scl)
-        : offset(off), scale(scl) {}
+    /// @brief Sizing for the UI Element
+    /// @param offsetSize Offset sizing based in pixels
+    /// @param scaleSize Scale sizing based on the percentage (0 to 1) of the size covered by the parent element
+    Size(Scaling offsetSize, Scaling scaleSize)
+        : offset(offsetSize), scale(scaleSize) {}
 };
 
+/// @brief The anchor position for the element ( screen anchor and local anchor )
 struct Anchor
 {
     Vector2 local;
     Vector2 screen;
-    Anchor(Vector2 lc, Vector2 sc)
-        : local(lc), screen(sc) {}
+
+    /// @brief Anchoring of the UI element
+    /// @param localAnc Anchors relatively to the UI Element
+    /// @param screenAnc Anchors relatively the UI Element to the parent Element
+    Anchor(Vector2 localAnc, Vector2 screenAnc)
+        : local(localAnc), screen(screenAnc) {}
 };
 
+/// @brief Data needed for positioning a UI Element into the screen
 struct UIPosition
 {
     Vector2 position;
@@ -49,8 +59,23 @@ struct UIPosition
     Scaling maxSize;
     Scaling minSize;
 
-    UIPosition(Vector2 pos, Anchor anch, Size sz, Scaling maxSz = Scaling{-1}, Scaling minSz = Scaling{-1})
-        : position(pos), anchor(anch), size(sz), maxSize(maxSz), minSize(minSz) {}
+    /// @brief Positioning for a UI element
+    /// @param offset The offset position in pixels
+    /// @param anchoring The anchor position for the element ( screen anchor and local anchor )
+    /// @param sizing The sizing for the element (offset in pixels and scale in percentage relative to parent size)
+    /// @param maxSizing The maximum size an element can take
+    /// @param minSizing The minimum size an element can take
+    UIPosition(
+        Vector2 offset,
+        Anchor anchoring,
+        Size sizing,
+        Scaling maxSizing = {-1},
+        Scaling minSizing = {-1})
+        : position(offset),
+          anchor(anchoring),
+          size(sizing),
+          maxSize(maxSizing),
+          minSize(minSizing) {}
 };
 
 class UIElement
@@ -59,21 +84,29 @@ public:
     UIPosition location;
 
     UIElement(UIPosition startLocation, bool isVisible = true)
-        : location(startLocation), visible(isVisible) {}
+        : location(startLocation), visible(isVisible), isLoaded(true) {}
     virtual ~UIElement() {}
 
     virtual void Draw() = 0;
-    virtual void Update() = 0;
-    virtual void Unload() = 0;
+    virtual void Update() {}
+    virtual void Unload() {}
+
+    void BaseUnload()
+    {
+        isLoaded = false;
+    }
 
     void setParentBounds(UIElement *parent)
     {
+        if (isLoaded == false) return;
         parentBounds = parent;
     }
 
     Rectangle getBounds()
     {
-        Rectangle parentRectangle = { 0, 0, static_cast<float>(GetRenderWidth()), static_cast<float>(GetRenderHeight())};
+        if (isLoaded == false) return {};
+
+        Rectangle parentRectangle = {0, 0, static_cast<float>(GetRenderWidth()), static_cast<float>(GetRenderHeight())};
         if (parentBounds != nullptr)
         {
             parentRectangle = parentBounds->getBounds();
@@ -93,8 +126,7 @@ public:
         {
             resultSize = {
                 clamp(screenXscale + uiSize.offset.width, parentRectangle.width * location.minSize.width, parentRectangle.width * location.maxSize.width),
-                clamp(screenYscale + uiSize.offset.height, parentRectangle.height * location.minSize.height, parentRectangle.height * location.maxSize.width)
-            };
+                clamp(screenYscale + uiSize.offset.height, parentRectangle.height * location.minSize.height, parentRectangle.height * location.maxSize.width)};
         }
 
         float screenXAnchor = parentRectangle.width * clamp(uiAnchor.screen.x, 0, 1);
@@ -103,7 +135,7 @@ public:
         float localXAnchor = resultSize.width * clamp(uiAnchor.local.x, 0, 1);
         float localYAnchor = resultSize.height * clamp(uiAnchor.local.y, 0, 1);
 
-        return (Rectangle){
+        return {
             screenXAnchor - localXAnchor + location.position.x + parentRectangle.x,
             screenYAnchor - localYAnchor + location.position.y + parentRectangle.y,
             resultSize.width,
@@ -112,7 +144,7 @@ public:
 
     bool IsMouseOver()
     {
-        if (isVisible() == false)
+        if (IsCursorOnScreen() == false || isVisible() == false || isLoaded == false)
         {
             return false;
         }
@@ -125,11 +157,15 @@ public:
 
     bool hasClicked()
     {
+        if (isLoaded == false) return false;
         return IsMouseOver() && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
     }
 
     bool isVisible()
     {
+        if (isLoaded == false)
+            return false;
+
         if (parentBounds != nullptr)
         {
             return parentBounds->isVisible();
@@ -147,13 +183,16 @@ public:
 private:
     bool visible = true;
     UIElement *parentBounds = nullptr;
+
+protected:
+    bool isLoaded = false;
 };
 
 class UIButton : public UIElement
 {
 public:
     UIButton(UIPosition startLocation, const char *text)
-        : UIElement(startLocation), text(text), clickCallback(nullptr)
+        : UIElement(startLocation), text(text)
     {
     }
 
@@ -162,7 +201,7 @@ public:
         Scaling buttonSizeOffset = location.size.offset;
         Color backgroundColor = IsMouseOver() ? DARKGRAY : LIGHTGRAY;
         int textLength = static_cast<int>(strlen(text));
-        int buttonWidth = buttonSizeOffset.width;
+        int buttonWidth = static_cast<int>(buttonSizeOffset.width);
 
         if (buttonSizeOffset.width < buttonSizeOffset.height * textLength)
         {
@@ -179,18 +218,8 @@ public:
         DrawText(text, buttonBounds.x + 10, buttonBounds.y + 10, buttonBounds.height - 20, BLACK);
     }
 
-    void onClick(std::function<void()> callbackFunction)
-    {
-        clickCallback = callbackFunction;
-    }
-
     void Update() override
     {
-        // If mouse inside button area and clicked call the callback function
-        if (hasClicked() && clickCallback)
-        {
-            clickCallback();
-        }
     }
 
     void Unload() override
@@ -199,7 +228,6 @@ public:
 
 private:
     const char *text;
-    std::function<void()> clickCallback; // Callback function
 };
 
 class UIContainer : public UIElement
@@ -217,7 +245,8 @@ public:
         }
     }
 
-    UIElement *getElementById(std::string identificator)
+    template <typename T>
+    T *getElementById(std::string identificator)
     {
         if (children.empty())
         {
@@ -226,7 +255,12 @@ public:
 
         if (children.count(identificator) > 0)
         {
-            return children.at(identificator);
+            UIElement* elementFound = children.at(identificator);
+
+            if (T* element = dynamic_cast<T*>(elementFound))
+            {
+                return element;
+            }
         }
         return nullptr;
     }

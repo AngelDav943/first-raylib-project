@@ -5,6 +5,8 @@
 #include <raymath.h>
 
 #include "../Utilities/CameraController.h"
+#include "../Utilities/PauseMenuController.h"
+
 #include "../Utilities/ElementsUI.h"
 #include "../Utilities/SceneObject.h"
 
@@ -14,6 +16,7 @@ private:
     const Color background = {20, 160, 133, 255};
 
     CameraController CamController;
+    PauseMenuController PauseController;
 
     Texture2D book_texture;
     Texture2D tile_texture;
@@ -39,6 +42,9 @@ public:
         // Loads textures
         book_texture = LoadTexture("assets/textures/book_texture.png");
         tile_texture = LoadTexture("assets/textures/blueprint_tiles.png");
+
+        // Loads the pause menu
+        PauseController.init(ui);
 
         space.AddObject(
             "cone_test",
@@ -81,50 +87,7 @@ public:
             .maps[MATERIAL_MAP_DIFFUSE]
             .texture = book_texture;
 
-        ui.AddElement(
-              "pauseMenu",
-              new UIContainer(
-                  UIPosition{
-                      Vector2{0, 0}, // Offset position
-                      Anchor{
-                          Vector2{0.5f, 0.5f}, // Local anchor
-                          Vector2{0.5f, 0.5f}  // Screen anchor
-                      },
-                      Size{
-                          Scaling{500, 0}, // Offset
-                          Scaling{0, 1}    // Scale
-                      },
-                      Scaling{1, 1}, // Max size
-                      Scaling{0, 0}  // Min size
-                  },
-                  // Children
-                  {{"resumeButton",
-                    new UIButton(
-                        UIPosition{
-                            Vector2{0, -5}, // Offset position
-                            Anchor{
-                                Vector2{0.0f, 1},    // Local anchor
-                                Vector2{0.0f, 0.5f}, // Screen anchor
-                            },
-                            Size{
-                                Scaling{0, 50}, // Offset
-                                Scaling{1, 0}   // Scale
-                            }},
-                        "Resume")},
-                   {"menuButton",
-                    new UIButton(
-                        UIPosition{
-                            Vector2{0, 5}, // Offset position
-                            Anchor{
-                                Vector2{0.5f, 0},    // Local anchor
-                                Vector2{0.5f, 0.5f}, // Screen anchor
-                            },
-                            Size{
-                                Scaling{0, 50}, // Offset
-                                Scaling{1, 0}   // Scale
-                            }},
-                        "Back to menu")}}))
-            ->setVisible(false);
+        
     }
 
     void Update() override
@@ -136,44 +99,19 @@ public:
         }
 
         // Toggles camera controls
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+        /*if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
             if (IsCursorHidden())
                 EnableCursor();
             else
                 DisableCursor();
-        }
+        }*/
     }
 
     // Game logic update after Drawing
     void LateUpdate() override
     {
-        UIContainer *pauseContainer = ui.GetElementById<UIContainer>("pauseMenu");
-        if (IsKeyPressed(KEY_ESCAPE))
-        {
-            if (pauseContainer->isVisible() == false)
-            {
-                EnableCursor();
-                pauseContainer->setVisible(true);
-            }
-            else
-            {
-                DisableCursor();
-                pauseContainer->setVisible(false);
-            }
-        }
-
-        // Pause menu logic
-        if (pauseContainer->getElementById("resumeButton")->hasClicked())
-        {
-            DisableCursor();
-            pauseContainer->setVisible(false);
-        }
-
-        if (pauseContainer->getElementById("menuButton")->hasClicked())
-        {
-            globalSceneManager.LoadScene("Menu");
-        }
+        PauseController.UpdateMenu(ui, globalSceneManager);
     }
 
     void DrawEarly() override
@@ -201,10 +139,6 @@ public:
             i++;
             DrawText(text.c_str(), 20, 20 + (i * 25), 20, ORANGE);
         }
-    }
-
-    void Draw3D() override
-    {
     }
 
     // Unload game assets
