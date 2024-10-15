@@ -7,9 +7,9 @@
 class ObjectManager
 {
 public:
-    ObjectManager(map<string, SceneObject *> children = {}) 
+    ObjectManager(map<string, SceneObject *> children = {})
         : objects(children) {}
-        
+
     template <typename T>
     T *GetElementById(std::string identificator)
     {
@@ -68,6 +68,11 @@ public:
             delete element;
         }
         objects.clear();
+    }
+
+    map<string, SceneObject *> getObjects()
+    {
+        return objects;
     }
 
 private:

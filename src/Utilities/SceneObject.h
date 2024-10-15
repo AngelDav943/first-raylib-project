@@ -3,6 +3,7 @@
 
 #include <raylib.h>
 #include <raymath.h>
+#include <optional>
 
 class BaseSceneObject
 {
@@ -17,15 +18,21 @@ public:
     virtual ~BaseSceneObject() {}
 
     /// @brief Returns the Bounding box of the Object's model taking into account the position
-    BoundingBox getBoundingBox()
+    BoundingBox getBoundingBox(std::optional<Vector3> overridePosition = std::nullopt)
     {
+        Vector3 currentPosition =  position;
+        if (overridePosition.has_value())
+        {
+            currentPosition = overridePosition.value();
+        }
+
         return BoundingBox{
-            Vector3Add(position, boundBox.min), // Minimum vertex box-corner
-            Vector3Add(position, boundBox.max)  // Maximum vertex box-corner
+            Vector3Add(currentPosition, boundBox.min), // Minimum vertex box-corner
+            Vector3Add(currentPosition, boundBox.max)  // Maximum vertex box-corner
         };
     }
 
-    virtual void Update() = 0; // Logic before Draw
+    virtual void Update() {}; // Logic before Draw
     virtual void Draw() = 0;   // Draw logic
 
 private:
@@ -35,17 +42,27 @@ private:
 class SceneObject : public BaseSceneObject
 {
 public:
-    /*SceneObject(Model mdl, Vector3 initialPos = {0})
+
+    SceneObject(Model mdl, Vector3 initialPos = {0})
         : BaseSceneObject(mdl)
     {
+        colorBase = WHITE;
         position = initialPos;
-    }*/
+    }
 
-    SceneObject(Model mdl, Vector3 initialPos = {0}, Color baseColor = WHITE)
+    SceneObject(Model mdl, Vector3 initialPos, Color baseColor)
         : BaseSceneObject(mdl)
     {
         position = initialPos;
         colorBase = baseColor;
+    }
+
+    SceneObject(Model mdl, Vector3 initialPos, Texture2D MaterialTexture)
+        : BaseSceneObject(mdl)
+    {
+        SetMaterialTexture(mdl.materials, MATERIAL_MAP_ALBEDO, MaterialTexture);
+        position = initialPos;
+        colorBase = WHITE;
     }
 
     void Update() override {}
@@ -53,6 +70,7 @@ public:
     void Draw() override
     {
         DrawModel(model, position, 1, colorBase);
+        DrawBoundingBox(getBoundingBox(), ORANGE);
     }
 
 private:
