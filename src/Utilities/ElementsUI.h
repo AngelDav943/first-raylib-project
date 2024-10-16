@@ -98,13 +98,15 @@ public:
 
     void setParentBounds(UIElement *parent)
     {
-        if (isLoaded == false) return;
+        if (isLoaded == false)
+            return;
         parentBounds = parent;
     }
 
     Rectangle getBounds()
     {
-        if (isLoaded == false) return {};
+        if (isLoaded == false)
+            return {};
 
         Rectangle parentRectangle = {0, 0, static_cast<float>(GetRenderWidth()), static_cast<float>(GetRenderHeight())};
         if (parentBounds != nullptr)
@@ -157,7 +159,8 @@ public:
 
     bool hasClicked()
     {
-        if (isLoaded == false) return false;
+        if (isLoaded == false)
+            return false;
         return IsMouseOver() && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
     }
 
@@ -188,18 +191,28 @@ protected:
     bool isLoaded = false;
 };
 
+struct ButtonColoring
+{
+    Color hoverBackground;
+    Color background;
+    Color text;
+
+    ButtonColoring(Color backgroundColor = LIGHTGRAY, Color hoverBackgroundColor = DARKGRAY, Color textColor = BLACK)
+        : background(backgroundColor), hoverBackground(hoverBackgroundColor), text(textColor) {}
+};
+
 class UIButton : public UIElement
 {
 public:
-    UIButton(UIPosition startLocation, const char *text)
-        : UIElement(startLocation), text(text)
+    UIButton(UIPosition startLocation, const char *text, ButtonColoring coloring = {LIGHTGRAY, DARKGRAY, BLACK})
+        : UIElement(startLocation), text(text), btnColoring(coloring)
     {
     }
 
     void Draw() override
     {
         Scaling buttonSizeOffset = location.size.offset;
-        Color backgroundColor = IsMouseOver() ? DARKGRAY : LIGHTGRAY;
+        Color backgroundColor = IsMouseOver() ? btnColoring.hoverBackground : btnColoring.background;
         int textLength = static_cast<int>(strlen(text));
         int buttonWidth = static_cast<int>(buttonSizeOffset.width);
 
@@ -215,7 +228,7 @@ public:
             buttonBounds.x, buttonBounds.y,
             buttonBounds.width, buttonBounds.height,
             backgroundColor);
-        DrawText(text, buttonBounds.x + 10, buttonBounds.y + 10, buttonBounds.height - 20, BLACK);
+        DrawText(text, buttonBounds.x + 10, buttonBounds.y + 10, buttonBounds.height - 20, btnColoring.text);
     }
 
     void Update() override
@@ -228,6 +241,7 @@ public:
 
 private:
     const char *text;
+    ButtonColoring btnColoring;
 };
 
 class UIContainer : public UIElement
@@ -255,9 +269,9 @@ public:
 
         if (children.count(identificator) > 0)
         {
-            UIElement* elementFound = children.at(identificator);
+            UIElement *elementFound = children.at(identificator);
 
-            if (T* element = dynamic_cast<T*>(elementFound))
+            if (T *element = dynamic_cast<T *>(elementFound))
             {
                 return element;
             }

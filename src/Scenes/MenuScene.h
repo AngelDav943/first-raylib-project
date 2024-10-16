@@ -58,7 +58,7 @@ public:
                     Scaling{1, 1}, // Max size
                     Scaling{0, 0}  // Min size
                 },
-                "Play"));
+                "Play noclip test"));
 
         ui.AddElement(
             "maps",
@@ -91,7 +91,10 @@ public:
                         Scaling{0, 50}, // Offset
                         Scaling{1, 0},  // Scale
                     }},
-                "Quit"));
+                "Quit",
+                ButtonColoring{
+                    RED, Color{ 190, 1, 25, 255 }, WHITE // Background, hover and text colors
+                }));
     }
 
     // Game logic update after drawing

@@ -7,6 +7,15 @@
 
 class BaseSceneObject
 {
+private:
+    BoundingBox boundBox;
+    Vector3 rotation;
+
+    float degreesToRadians(float radians)
+    {
+        return (radians * PI) / 180.0f;
+    }
+
 public:
     Model model;
     Vector3 position;
@@ -25,18 +34,31 @@ public:
         {
             currentPosition = overridePosition.value();
         }
-
+    
         return BoundingBox{
             Vector3Add(currentPosition, boundBox.min), // Minimum vertex box-corner
             Vector3Add(currentPosition, boundBox.max)  // Maximum vertex box-corner
         };
     }
 
+    Vector3 getRotation()
+    {
+        return rotation;
+    }
+
+    Vector3 setRotation(Vector3 newRotation)
+    {
+        model.transform = MatrixRotateXYZ(Vector3{
+            degreesToRadians(newRotation.x),
+            degreesToRadians(newRotation.y),
+            degreesToRadians(newRotation.z)
+        });
+        return newRotation;
+    }
+
     virtual void Update() {}; // Logic before Draw
     virtual void Draw() = 0;   // Draw logic
 
-private:
-    BoundingBox boundBox;
 };
 
 class SceneObject : public BaseSceneObject

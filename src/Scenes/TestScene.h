@@ -91,6 +91,7 @@ public:
 			.texture = book_texture;
 	}
 
+	float planeY = 0;
 	void Update() override
 	{
 		if (IsCursorHidden())
@@ -98,6 +99,11 @@ public:
 			CamController.Update();
 			SetMousePosition(center.x, center.y); // Set the mouse position to the center
 		}
+
+		planeY = planeY + (0.5f * GetFrameTime());
+		space.GetElementById<SceneObject>("baseplane")->setRotation({
+			0, planeY, 0
+		});
 
 		// Toggles camera controls
 		/*if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
@@ -132,7 +138,9 @@ public:
 			("AngleY: " + to_string(CamController.angleY)),
 			("X: " + to_string(CamController.currentCamera.position.x)),
 			("Y: " + to_string(CamController.currentCamera.position.y)),
-			("Z: " + to_string(CamController.currentCamera.position.z))};
+			("Z: " + to_string(CamController.currentCamera.position.z)),
+			("planeY: " + to_string(planeY)),
+			};
 
 		int i = 0;
 		for (string text : texts)
