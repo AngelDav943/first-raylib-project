@@ -3,9 +3,15 @@
 
 #include "ElementsUI.h"
 #include <map>
+#include <vector>
 
 class UIManager
 {
+private:
+    vector<UIElement *> elements;
+    bool initialized = false;
+    unsigned int elementIndex = 0;
+
 public:
     /// @brief Inserts an element to the UI Manager
     /// @param identificator Name used for identification (can't be two elements with the same id)
@@ -13,7 +19,9 @@ public:
     /// @return Returns the element added
     UIElement *AddElement(std::string identificator, UIElement *element)
     {
-        elements.insert({identificator, element});
+        // elements.insert({identificator, element});
+        element->identificatorName = identificator;
+        elements.push_back(element);
         return element;
     }
 
@@ -29,7 +37,7 @@ public:
             return nullptr;
         }
 
-        if (elements.count(identificator) > 0)
+        /*if (elements.count(identificator) > 0)
         {
             UIElement* elementFound = elements.at(identificator);
 
@@ -37,30 +45,53 @@ public:
             {
                 return element;
             }
+        }*/
+
+        for (long long unsigned int i = 0; i < elements.size(); i++)
+        {
+            UIElement *currentElement = elements[i];
+            if (currentElement->identificatorName == identificator)
+            {
+                if (T *element = dynamic_cast<T *>(currentElement))
+                {
+                    return element;
+                }
+            }
         }
+
         return nullptr;
     }
 
     void Update()
     {
-        for (auto elementPair : elements)
+        bool isHovering = false;
+        for (long long unsigned int i = 0; i < elements.size(); i++)
         {
-            UIElement *element = elementPair.second;
+            UIElement *element = elements[i];
             if (element && element->isVisible() == true)
             {
+                if (element->IsMouseOver())
+                {
+                    isHovering = true;
+                }
                 element->Update();
             }
+        }
+
+        if (isHovering == false)
+        {
+            currentHovering = 0;
         }
     }
 
     void Draw()
     {
-        for (auto elementPair : elements)
+        for (int i = 0; i < elements.size(); i++)
         {
-            UIElement *element = elementPair.second;
+            UIElement *element = elements[i];
             if (element != nullptr && element->isVisible() == true)
             {
-                element->Draw();
+                element->BaseDraw(i);
             }
         }
     }
@@ -74,9 +105,9 @@ public:
     /// @brief Unloads the ui by deleting all the elements loaded and setting the initialized mode to false, disabling the `GetElementById`
     void Unload()
     {
-        for (auto elementPair : elements)
+        for (int i = 0; i < elements.size(); i++)
         {
-            UIElement *element = elementPair.second;
+            UIElement *element = elements[i];
             if (element)
             {
                 element->BaseUnload();
@@ -87,10 +118,6 @@ public:
         elements.clear();
         initialized = false;
     }
-
-private:
-    map<std::string, UIElement *> elements;
-    bool initialized = false;
 };
 
 #endif

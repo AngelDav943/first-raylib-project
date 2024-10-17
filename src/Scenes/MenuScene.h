@@ -3,7 +3,7 @@
 
 #include "../Scene.h"
 #include <string>
-#include <list>
+#include <vector>
 #include <memory>
 
 #include <raylib.h>
@@ -12,6 +12,7 @@
 #include "../Utilities/SceneManager.h"
 #include "../Utilities/CameraController.h"
 #include "../Utilities/ElementsUI.h"
+#include "../Utilities/UIManager.h"
 
 class MenuScene : public Scene
 {
@@ -93,8 +94,24 @@ public:
                     }},
                 "Quit",
                 ButtonColoring{
-                    RED, Color{ 190, 1, 25, 255 }, WHITE // Background, hover and text colors
+                    RED, Color{190, 1, 25, 255}, WHITE // Background, hover and text colors
                 }));
+
+        ui.AddElement(
+            "panel",
+            new UIContainer(
+                UIPosition{
+                    Vector2{0, 0}, // Offset position
+                    Anchor{
+                        Vector2{0, 0},   // Local anchor
+                        Vector2{0.5f, 0} // Screen anchor
+                    },
+                    Size{
+                        Scaling{0, 0},   // Offset
+                        Scaling{0.5f, 1} // Scale
+                    }},
+                {} // Elements
+                ));
     }
 
     // Game logic update after drawing
@@ -155,17 +172,16 @@ public:
             }
         }
 
-        list<string> texts = {
+        vector<string> texts = {
             ("Hello world! FPS:" + to_string(GetFPS())),
             "Click the button to change scene.",
             ("x repeats:" + to_string(tileWidthRepeats)),
-            ("y repeats:" + to_string(tileHeightRepeats))};
+            ("y repeats:" + to_string(tileHeightRepeats)),
+            ("hovercurrent:" + to_string(currentHovering))};
 
-        int i = 0;
-        for (string text : texts)
+        for (long long unsigned int i = 0; i < texts.size(); i++)
         {
-            i++;
-            DrawText(text.c_str(), 20, 20 + (i * 25), 20, ORANGE);
+            DrawText(texts[i].c_str(), 20, 20 + (i * 25), 20, ORANGE);
         }
     }
 

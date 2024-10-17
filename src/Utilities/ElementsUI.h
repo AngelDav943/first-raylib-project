@@ -4,12 +4,14 @@
 #include <iostream>
 
 #include <math.h>
-#include <list>
-#include <map>
 #include <string>
 #include <cstring>
 #include <memory>
 #include <raylib.h>
+#include <vector>
+#include <map>
+
+unsigned currentHovering = 0;
 
 float clamp(const float &value, const float &min, const float &max)
 {
@@ -81,6 +83,7 @@ struct UIPosition
 class UIElement
 {
 public:
+    string identificatorName;
     UIPosition location;
 
     UIElement(UIPosition startLocation, bool isVisible = true)
@@ -88,6 +91,13 @@ public:
     virtual ~UIElement() {}
 
     virtual void Draw() = 0;
+
+    virtual void BaseDraw(unsigned int zIndex)
+    {
+        drawnIndex = zIndex;
+        Draw();
+    }
+
     virtual void Update() {}
     virtual void Unload() {}
 
@@ -146,15 +156,23 @@ public:
 
     bool IsMouseOver()
     {
-        if (IsCursorOnScreen() == false || isVisible() == false || isLoaded == false)
+        if (IsCursorOnScreen() == false || isVisible() == false || isLoaded == false || currentHovering > drawnIndex)
         {
             return false;
         }
 
         Vector2 mousePos = GetMousePosition();
         Rectangle bounds = getBounds();
-        return (mousePos.x >= bounds.x && mousePos.x <= bounds.x + bounds.width &&
-                mousePos.y >= bounds.y && mousePos.y <= bounds.y + bounds.height);
+
+        bool isOver = (mousePos.x >= bounds.x && mousePos.x <= bounds.x + bounds.width &&
+                       mousePos.y >= bounds.y && mousePos.y <= bounds.y + bounds.height);
+
+        if (isOver)
+        {
+            currentHovering = drawnIndex;
+        }
+
+        return isOver;
     }
 
     bool hasClicked()
@@ -188,14 +206,15 @@ private:
     UIElement *parentBounds = nullptr;
 
 protected:
+    unsigned int drawnIndex = 0;
     bool isLoaded = false;
 };
 
 struct ButtonColoring
 {
-    Color hoverBackground;
-    Color background;
-    Color text;
+    Color hoverBackground = DARKGRAY;
+    Color background = LIGHTGRAY;
+    Color text = BLACK;
 
     ButtonColoring(Color backgroundColor = LIGHTGRAY, Color hoverBackgroundColor = DARKGRAY, Color textColor = BLACK)
         : background(backgroundColor), hoverBackground(hoverBackgroundColor), text(textColor) {}
@@ -211,6 +230,7 @@ public:
 
     void Draw() override
     {
+
         Scaling buttonSizeOffset = location.size.offset;
         Color backgroundColor = IsMouseOver() ? btnColoring.hoverBackground : btnColoring.background;
         int textLength = static_cast<int>(strlen(text));
@@ -231,14 +251,6 @@ public:
         DrawText(text, buttonBounds.x + 10, buttonBounds.y + 10, buttonBounds.height - 20, btnColoring.text);
     }
 
-    void Update() override
-    {
-    }
-
-    void Unload() override
-    {
-    }
-
 private:
     const char *text;
     ButtonColoring btnColoring;
@@ -246,14 +258,19 @@ private:
 
 class UIContainer : public UIElement
 {
+private:
+    vector<UIElement *> children;
+
 public:
     UIContainer(UIPosition startLocation, const map<std::string, UIElement *> elements)
-        : UIElement(startLocation), children(elements)
+        : UIElement(startLocation)
     {
         for (auto elementPair : elements)
         {
             if (elementPair.second)
             {
+                elementPair.second->identificatorName = elementPair.first;
+                children.push_back(elementPair.second);
                 elementPair.second->setParentBounds(this);
             }
         }
@@ -267,15 +284,18 @@ public:
             return nullptr;
         }
 
-        if (children.count(identificator) > 0)
+        for (long long unsigned int i = 0; i < children.size(); i++)
         {
-            UIElement *elementFound = children.at(identificator);
-
-            if (T *element = dynamic_cast<T *>(elementFound))
+            UIElement *currentElement = children[i];
+            if (currentElement->identificatorName == identificator)
             {
-                return element;
+                if (T *element = dynamic_cast<T *>(currentElement))
+                {
+                    return element;
+                }
             }
         }
+
         return nullptr;
     }
 
@@ -289,21 +309,21 @@ public:
             buttonBounds.width, buttonBounds.height,
             backgroundColor);
 
-        for (auto elementPair : children)
+        for (long long unsigned int i = 0; i < children.size(); i++)
         {
-            UIElement *element = elementPair.second;
+            UIElement *element = children[i];
             if (element && element->isVisible() == true)
             {
-                element->Draw();
+                element->BaseDraw(drawnIndex);
             }
         }
     }
 
     void Update() override
     {
-        for (auto elementPair : children)
+        for (long long unsigned int i = 0; i < children.size(); i++)
         {
-            UIElement *element = elementPair.second;
+            UIElement *element = children[i];
             if (element && element->isVisible() == true)
             {
                 element->Update();
@@ -313,17 +333,14 @@ public:
 
     void Unload() override
     {
-        for (auto elementPair : children)
+        for (long long unsigned int i = 0; i < children.size(); i++)
         {
-            UIElement *element = elementPair.second;
+            UIElement *element = children[i];
             element->Unload();
             delete element;
         }
         children.clear();
     }
-
-private:
-    map<std::string, UIElement *> children;
 };
 
 #endif

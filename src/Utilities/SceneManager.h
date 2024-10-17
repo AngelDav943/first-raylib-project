@@ -4,6 +4,7 @@
 #include "../Scene.h"
 #include "ObjectManager.h"
 #include <map>
+#include <vector>
 #include <memory>
 #include <stack>
 
@@ -86,18 +87,16 @@ public:
             if (loadedScene->camera3D != nullptr && false) // for debugging camera and stuff
             {
                 Camera3D current = *loadedScene->camera3D;
-                list<string> texts = {
+                vector<string> texts = {
                     ("TargetX: " + to_string(current.target.x)),
                     ("TargetZ: " + to_string(current.target.z)),
                     ("X: " + to_string(current.position.x)),
                     ("Y: " + to_string(current.position.y)),
                     ("Z: " + to_string(current.position.z))};
 
-                int i = 0;
-                for (string text : texts)
+                for (long long unsigned int i = 0; i < texts.size(); i++)
                 {
-                    i++;
-                    DrawText(text.c_str(), 20, 20 + (i * 25), 20, RED);
+                    DrawText(texts[i].c_str(), 20, 20 + (i * 25), 20, RED);
                 }
             }
         }

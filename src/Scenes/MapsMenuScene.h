@@ -22,7 +22,7 @@ public:
                     Vector2{}, 
                     Anchor{ // Anchoring of element
                         Vector2{0, 0}, // local anchoring
-                        Vector2{0, 0.5f} // parent anchoring
+                        Vector2{0, 0} // parent anchoring
                     }, // initial offset
                     Size{ 
                         Scaling{0, 50}, // offset
