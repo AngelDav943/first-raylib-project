@@ -96,22 +96,6 @@ public:
                 ButtonColoring{
                     RED, Color{190, 1, 25, 255}, WHITE // Background, hover and text colors
                 }));
-
-        ui.AddElement(
-            "panel",
-            new UIContainer(
-                UIPosition{
-                    Vector2{0, 0}, // Offset position
-                    Anchor{
-                        Vector2{0, 0},   // Local anchor
-                        Vector2{0.5f, 0} // Screen anchor
-                    },
-                    Size{
-                        Scaling{0, 0},   // Offset
-                        Scaling{0.5f, 1} // Scale
-                    }},
-                {} // Elements
-                ));
     }
 
     // Game logic update after drawing

@@ -80,6 +80,14 @@ public:
 				));
 
 		space.AddObject(
+				 "rotatingCube", // name
+				 new SceneObject(
+					 LoadModelFromMesh(GenMeshCube(1, 1, 1)), // model
+					 Vector3{0, -1.5f, 1.95f},				  // initial position
+					 RED									  // base color
+					 ));
+
+		space.AddObject(
 				 "book",
 				 new PhysicsObject(
 					 LoadModel("assets/models/book.obj"), // model
@@ -91,6 +99,7 @@ public:
 			.texture = book_texture;
 	}
 
+	float cubeY = 35;
 	float planeY = 0;
 	void Update() override
 	{
@@ -100,10 +109,10 @@ public:
 			SetMousePosition(center.x, center.y); // Set the mouse position to the center
 		}
 
+		cubeY = cubeY + (3 * GetFrameTime());
 		planeY = planeY + (0.5f * GetFrameTime());
-		space.GetElementById<SceneObject>("baseplane")->setRotation({
-			0, planeY, 0
-		});
+		space.GetElementById<SceneObject>("rotatingCube")->setRotation({0, cubeY, 0});
+		space.GetElementById<SceneObject>("baseplane")->setRotation({0, planeY, 0});
 
 		// Toggles camera controls
 		/*if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
@@ -140,7 +149,7 @@ public:
 			("Y: " + to_string(CamController.currentCamera.position.y)),
 			("Z: " + to_string(CamController.currentCamera.position.z)),
 			("planeY: " + to_string(planeY)),
-			};
+		};
 
 		int i = 0;
 		for (string text : texts)

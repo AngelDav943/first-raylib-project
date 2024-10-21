@@ -16,10 +16,10 @@ int main()
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "An amazing project");
     SetWindowMinSize(screenWidth / 2, screenHeight / 2);
-// #if defined(ANDROID)
+    // #if defined(ANDROID)
     // SetConfigFlags(FLAG_FULLSCREEN_MODE);
     // InitWindow(GetScreenWidth(), GetScreenHeight(), "An amazing project");
-// #endif
+    // #endif
 
     globalSceneManager.InsertScene("Menu", make_unique<MenuScene>());
     globalSceneManager.InsertScene("MapsMenu", make_unique<MapsMenuScene>());

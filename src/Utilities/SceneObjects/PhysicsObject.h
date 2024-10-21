@@ -19,6 +19,11 @@ public:
     {
     }
 
+    void OnCollision()
+    {
+
+    }
+
     void Update() override {
         Vector3 newPosition = Vector3Subtract(position, {0, 1 * GetFrameTime(), 0});
 
@@ -30,9 +35,11 @@ public:
 				continue;
 			}
 
-            bool hasCollided = CheckCollisionBoxes(getBoundingBox(newPosition), objectPair.second->getBoundingBox());
+            // bool hasCollided = CheckCollisionBoxes(getBoundingBox(newPosition), objectPair.second->getBoundingBox());
+            bool hasCollided = checkCollision(*(objectPair.second));
             if (hasCollided)
             {
+                OnCollision();
                 canMove = false;
             }
         }
