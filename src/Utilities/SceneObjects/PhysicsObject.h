@@ -19,9 +19,9 @@ public:
     {
     }
 
-    void OnCollision()
+    void OnCollision(SceneObject *hit)
     {
-
+        
     }
 
     void Update() override {
@@ -39,7 +39,7 @@ public:
             bool hasCollided = checkCollision(*(objectPair.second));
             if (hasCollided)
             {
-                OnCollision();
+                OnCollision(objectPair.second);
                 canMove = false;
             }
         }
