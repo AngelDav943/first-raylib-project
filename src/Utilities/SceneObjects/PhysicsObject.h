@@ -12,6 +12,7 @@
 class PhysicsObject: public SceneObject {
 private:
     ObjectManager* spaceManager;
+    Vector3 lastHit;
 
 public:
     PhysicsObject(Model mdl, ObjectManager* space, Vector3 initialPos = {0})
@@ -19,9 +20,9 @@ public:
     {
     }
 
-    void OnCollision(SceneObject *hit)
+    void OnCollision(BaseSceneObject &hit)
     {
-
+        lastHit = hit.getClosestCorner(position);
     }
 
     void Update() override {
@@ -39,7 +40,7 @@ public:
             bool hasCollided = checkCollision(*(objectPair.second));
             if (hasCollided)
             {
-                OnCollision(objectPair.second);
+                OnCollision(*(objectPair.second));
                 canMove = false;
             }
         }
@@ -52,7 +53,7 @@ public:
     void Draw() override {
         SceneObject::Draw();
 
-        DrawSphere(position, 20, BLUE);
+        DrawSphere(lastHit, 0.1f, BLUE);
     }
 };
 #endif
