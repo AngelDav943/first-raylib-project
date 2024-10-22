@@ -212,11 +212,11 @@ protected:
 
 struct ButtonColoring
 {
-    Color hoverBackground = DARKGRAY;
-    Color background = LIGHTGRAY;
-    Color text = BLACK;
+    Color hoverBackground;
+    Color background;
+    Color text;
 
-    ButtonColoring(Color backgroundColor = LIGHTGRAY, Color hoverBackgroundColor = DARKGRAY, Color textColor = BLACK)
+    ButtonColoring(Color backgroundColor, Color hoverBackgroundColor, Color textColor)
         : background(backgroundColor), hoverBackground(hoverBackgroundColor), text(textColor) {}
 };
 

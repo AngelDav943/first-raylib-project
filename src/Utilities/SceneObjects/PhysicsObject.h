@@ -21,7 +21,7 @@ public:
 
     void OnCollision(SceneObject *hit)
     {
-        
+
     }
 
     void Update() override {
@@ -47,6 +47,12 @@ public:
         if (canMove) {
             position = newPosition;
         }
+    }
+
+    void Draw() override {
+        SceneObject::Draw();
+
+        DrawSphere(position, 20, BLUE);
     }
 };
 #endif

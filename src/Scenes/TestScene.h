@@ -109,19 +109,10 @@ public:
 			SetMousePosition(center.x, center.y); // Set the mouse position to the center
 		}
 
-		cubeY = cubeY + (3 * GetFrameTime());
+		cubeY = cubeY + (5 * GetFrameTime());
 		planeY = planeY + (0.5f * GetFrameTime());
 		space.GetElementById<SceneObject>("rotatingCube")->setRotation({0, cubeY, 0});
 		space.GetElementById<SceneObject>("baseplane")->setRotation({0, planeY, 0});
-
-		// Toggles camera controls
-		/*if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-		{
-			if (IsCursorHidden())
-				EnableCursor();
-			else
-				DisableCursor();
-		}*/
 	}
 
 	// Game logic update after Drawing

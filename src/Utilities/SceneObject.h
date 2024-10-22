@@ -38,7 +38,7 @@ private:
         for (int i = 0; i < 8; i++)
         {
             Vector3 rotatedVertex = {localVertices[i].x, localVertices[i].y, localVertices[i].z};
-            
+
             Matrix rotationMatrix = MatrixRotateXYZ({
                 degreesToRadians(rotation.x),
                 degreesToRadians(rotation.y),
@@ -112,6 +112,24 @@ private:
         }
 
         return true; // Collision detected
+    }
+
+    Vector3 getClosestCorner(const Vector3 point, const Vector3 *vertices) const {
+        Vector3 closest = vertices[0];
+        float distance = Vector3Distance(point, vertices[0]);
+
+        for (int i = 0; i < 8; i++)
+        {
+            float latestDistance = Vector3Distance(point, vertices[i]);
+            if (latestDistance < distance)
+            {
+                closest = vertices[i];
+                distance = latestDistance;
+            }
+        }
+
+        return closest;
+
     }
 
 public:
@@ -211,7 +229,7 @@ public:
 
     void Update() override {}
 
-    void Draw() override
+    virtual void Draw() override
     {
         DrawModel(model, position, 1, colorBase);
         // DrawBoundingBox(getBoundingBox(), ORANGE);
