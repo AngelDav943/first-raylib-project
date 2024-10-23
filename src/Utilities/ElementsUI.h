@@ -23,61 +23,43 @@ struct Scaling
 {
     float width;
     float height;
+    
+    Scaling(float w = 0, float h = 0) : width(w), height(h) {}
 };
 
 /// @brief The sizing for the UI Element ( offset in pixels and scale in percentage relative to parent size )
+/// @param offset Offset sizing based in pixels
+/// @param scale Scale sizing based on the percentage (0 to 1) of the size covered by the parent element
 struct Size
 {
     Scaling offset;
     Scaling scale;
-
-    /// @brief Sizing for the UI Element
-    /// @param offsetSize Offset sizing based in pixels
-    /// @param scaleSize Scale sizing based on the percentage (0 to 1) of the size covered by the parent element
-    Size(Scaling offsetSize, Scaling scaleSize)
-        : offset(offsetSize), scale(scaleSize) {}
 };
 
 /// @brief The anchor position for the element ( screen anchor and local anchor )
+/// @param local Anchors relatively to the UI Element
+/// @param screen Anchors relatively the UI Element to the parent Element
 struct Anchor
 {
     Vector2 local;
     Vector2 screen;
-
-    /// @brief Anchoring of the UI element
-    /// @param localAnc Anchors relatively to the UI Element
-    /// @param screenAnc Anchors relatively the UI Element to the parent Element
-    Anchor(Vector2 localAnc, Vector2 screenAnc)
-        : local(localAnc), screen(screenAnc) {}
 };
 
 /// @brief Data needed for positioning a UI Element into the screen
+/// @param position The offset position in pixels
+/// @param anchor The anchor position for the element ( screen anchor and local anchor )
+/// @param size The sizing for the element (offset in pixels and scale in percentage relative to parent size)
+/// @param maxSize The maximum size an element can take
+/// @param minSize The minimum size an element can take
 struct UIPosition
 {
     Vector2 position;
     Anchor anchor;
     Size size;
 
-    Scaling maxSize;
-    Scaling minSize;
+    Scaling maxSize = {1, 1};
+    Scaling minSize = {0, 0};
 
-    /// @brief Positioning for a UI element
-    /// @param offset The offset position in pixels
-    /// @param anchoring The anchor position for the element ( screen anchor and local anchor )
-    /// @param sizing The sizing for the element (offset in pixels and scale in percentage relative to parent size)
-    /// @param maxSizing The maximum size an element can take
-    /// @param minSizing The minimum size an element can take
-    UIPosition(
-        Vector2 offset,
-        Anchor anchoring,
-        Size sizing,
-        Scaling maxSizing = {-1},
-        Scaling minSizing = {-1})
-        : position(offset),
-          anchor(anchoring),
-          size(sizing),
-          maxSize(maxSizing),
-          minSize(minSizing) {}
 };
 
 class UIElement
@@ -212,12 +194,9 @@ protected:
 
 struct ButtonColoring
 {
-    Color hoverBackground;
     Color background;
+    Color hoverBackground;
     Color text;
-
-    ButtonColoring(Color backgroundColor, Color hoverBackgroundColor, Color textColor)
-        : background(backgroundColor), hoverBackground(hoverBackgroundColor), text(textColor) {}
 };
 
 class UIButton : public UIElement

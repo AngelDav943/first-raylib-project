@@ -19,12 +19,12 @@ public:
             "hasFolderTest",
             new UIButton(
                 UIPosition{
-                    Vector2{}, 
-                    Anchor{ // Anchoring of element
+                    .position = Vector2{}, 
+                    .anchor = Anchor{ // Anchoring of element
                         Vector2{0, 0}, // local anchoring
                         Vector2{0, 0} // parent anchoring
                     }, // initial offset
-                    Size{ 
+                    .size = Size{ 
                         Scaling{0, 50}, // offset
                         Scaling{1, 0} // scale
                     } // Sizing of element
@@ -37,12 +37,12 @@ public:
             "backMenu",
             new UIButton(
                 UIPosition{
-                    Vector2{}, 
-                    Anchor{ // Anchoring of element
+                    .position = Vector2{}, 
+                    .anchor = Anchor{ // Anchoring of element
                         Vector2{0, 1}, // local anchoring
                         Vector2{0, 1} // parent anchoring
                     }, // initial offset
-                    Size{ 
+                    .size = Size{ 
                         Scaling{0, 50}, // offset
                         Scaling{1, 0} // scale
                     } // Sizing of element
@@ -50,7 +50,6 @@ public:
                 "Back to menu"
             )
         );
-
     }
 
     int tileSpeed = 10;

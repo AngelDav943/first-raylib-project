@@ -29,17 +29,17 @@ public:
             "test",
             new UIButton(
                 UIPosition{
-                    Vector2{0, -10}, // Local position
-                    Anchor{
+                    .position = Vector2{0, -10}, // Local position
+                    .anchor = Anchor{
                         Vector2{0.5f, 1},   // Local anchor
                         Vector2{0.5f, 0.5f} // Screen anchor
                     },
-                    Size{
+                    .size = Size{
                         Scaling{500, 50}, // Offset
                         Scaling{0}        // Scale
                     },
-                    Scaling{1, 1}, // Max size
-                    Scaling{0, 0}  // Min size
+                    .maxSize = Scaling{1, 1}, // Max size
+                    .minSize = Scaling{0, 0}  // Min size
                 },
                 "Toggle start button visibility"));
 
@@ -47,17 +47,17 @@ public:
             "start",
             new UIButton(
                 UIPosition{
-                    Vector2{0, 0}, // Offset position
-                    Anchor{
+                    .position = Vector2{0, 0}, // Offset position
+                    .anchor = Anchor{
                         Vector2{0.5f, 0},   // Local anchor
                         Vector2{0.5f, 0.5f} // Screen anchor
                     },
-                    Size{
+                    .size = Size{
                         Scaling{500, 50}, // Offset
                         Scaling{0},       // Scale
                     },
-                    Scaling{1, 1}, // Max size
-                    Scaling{0, 0}  // Min size
+                    .maxSize = Scaling{1, 1}, // Max size
+                    .minSize = Scaling{0, 0}  // Min size
                 },
                 "Play noclip test"));
 
@@ -65,17 +65,17 @@ public:
             "maps",
             new UIButton(
                 UIPosition{
-                    Vector2{0, 60}, // Offset position
-                    Anchor{
+                    .position = Vector2{0, 60}, // Offset position
+                    .anchor = Anchor{
                         Vector2{0.5f, 0},   // Local anchor
                         Vector2{0.5f, 0.5f} // Screen anchor
                     },
-                    Size{
+                    .size = Size{
                         Scaling{500, 50}, // Offset
                         Scaling{0},       // Scale
                     },
-                    Scaling{1, 1}, // Max size
-                    Scaling{0, 0}  // Min size
+                    .maxSize = Scaling{1, 1}, // Max size
+                    .minSize = Scaling{0, 0}  // Min size
                 },
                 "Maps test"));
 
@@ -83,19 +83,20 @@ public:
             "quit",
             new UIButton(
                 UIPosition{
-                    Vector2{0, 0}, // Offset position
-                    Anchor{
+                    .position = Vector2{0, 0}, // Offset position
+                    .anchor = Anchor{
                         Vector2{0, 1}, // Local anchor
                         Vector2{0, 1}  // Screen anchor
                     },
-                    Size{
+                    .size = Size{
                         Scaling{0, 50}, // Offset
                         Scaling{1, 0},  // Scale
                     }},
-                "Quit",
+                "Quit", // text
                 ButtonColoring{
                     RED, Color{190, 1, 25, 255}, WHITE // Background, hover and text colors
-                }));
+                })                                     // button
+        );
     }
 
     // Game logic update after drawing

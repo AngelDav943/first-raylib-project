@@ -18,55 +18,55 @@ public:
               "pauseMenu",
               new UIContainer(
                   UIPosition{
-                      Vector2{0, 0}, // Offset position
-                      Anchor{
+                    .position = Vector2{0, 0}, // Offset position
+                    .anchor = Anchor{
                           Vector2{0.5f, 0.5f}, // Local anchor
                           Vector2{0.5f, 0.5f}  // Screen anchor
                       },
-                      Size{
+                    .size = Size{
                           Scaling{500, 0}, // Offset
                           Scaling{0, 1}    // Scale
                       },
-                      Scaling{1, 1}, // Max size
-                      Scaling{0, 0}  // Min size
+                    .maxSize = Scaling{1, 1}, // Max size
+                    .minSize = Scaling{0, 0}  // Min size
                   },
                   // Children
                   {
-                      {"resumeButton",
+                      {"resumeButton", // id
                        new UIButton(
                            UIPosition{
-                               Vector2{0, -5}, // Offset position
-                               Anchor{
+                               .position = Vector2{0, -5}, // Offset position
+                               .anchor = Anchor{
                                    Vector2{0.0f, 1},    // Local anchor
                                    Vector2{0.0f, 0.5f}, // Screen anchor
                                },
-                               Size{
+                               .size = Size{
                                    Scaling{0, 50}, // Offset
                                    Scaling{1, 0}   // Scale
                                }},
                            "Resume")},
-                      {"menuButton",
+                      {"menuButton", // id
                        new UIButton(
                            UIPosition{
-                               Vector2{0, 5}, // Offset position
-                               Anchor{
+                               .position = Vector2{0, 5}, // Offset position
+                               .anchor = Anchor{
                                    Vector2{0.5f, 0},    // Local anchor
                                    Vector2{0.5f, 0.5f}, // Screen anchor
                                },
-                               Size{
+                               .size = Size{
                                    Scaling{0, 50}, // Offset
                                    Scaling{1, 0},  // Scale
                                }},
                            "Back to menu")},
-                      {"quitButton",
+                      {"quitButton", // id
                        new UIButton(
                            UIPosition{
-                               Vector2{0, 0}, // Offset position
-                               Anchor{
+                               .position = Vector2{0, 0}, // Offset position
+                               .anchor = Anchor{
                                    Vector2{0.5f, 1}, // Local anchor
                                    Vector2{0.5f, 1}, // Screen anchor
                                },
-                               Size{
+                               .size = Size{
                                    Scaling{0, 50}, // Offset
                                    Scaling{1, 0},  // Scale
                                }},
