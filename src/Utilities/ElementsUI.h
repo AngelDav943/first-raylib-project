@@ -23,7 +23,7 @@ struct Scaling
 {
     float width;
     float height;
-    
+
     Scaling(float w = 0, float h = 0) : width(w), height(h) {}
 };
 
@@ -59,7 +59,6 @@ struct UIPosition
 
     Scaling maxSize = {1, 1};
     Scaling minSize = {0, 0};
-
 };
 
 class UIElement
@@ -138,12 +137,22 @@ public:
 
     bool IsMouseOver()
     {
-        if (IsCursorOnScreen() == false || isVisible() == false || isLoaded == false || currentHovering > drawnIndex)
+#ifdef PLATFORM_DESKTOP
+        if (IsCursorOnScreen() == false) {
+            return false;
+        }
+#else
+        if (GetTouchPointCount() <= 0) {
+            return false;
+        }
+#endif
+
+        if (isVisible() == false || isLoaded == false || currentHovering > drawnIndex)
         {
             return false;
         }
 
-        Vector2 mousePos = GetMousePosition();
+        Vector2 mousePos = GetTouchPosition(0);
         Rectangle bounds = getBounds();
 
         bool isOver = (mousePos.x >= bounds.x && mousePos.x <= bounds.x + bounds.width &&
@@ -161,7 +170,8 @@ public:
     {
         if (isLoaded == false)
             return false;
-        return IsMouseOver() && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+        // return IsMouseOver() && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+        return IsMouseOver() && IsGestureDetected(GESTURE_TAP);
     }
 
     bool isVisible()

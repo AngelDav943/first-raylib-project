@@ -1,6 +1,8 @@
 #ifndef MAPSMENUSCENEH
 #define MAPSMENUSCENEH
 
+#include <string>
+#include <list>
 #include "../Scene.h"
 
 #include "../Utilities/ElementsUI.h"
@@ -50,6 +52,8 @@ public:
                 "Back to menu"
             )
         );
+
+        // SaveFileText("test.txt","Hello world");
     }
 
     int tileSpeed = 10;
@@ -74,6 +78,23 @@ public:
                     WHITE);
             }
         }
+
+        FilePathList files = LoadDirectoryFiles("");
+        list<string> texts = {
+			GetWorkingDirectory()
+		};
+
+        for (int i = 0; i < files.count; i++)
+        {
+            texts.push_front(files.paths[i]);
+        }
+
+		int i = 0;
+		for (string text : texts)
+		{
+			i++;
+			DrawText(text.c_str(), 20, 55 + (i * 25), 20, ORANGE);
+		}
     }
     void LateUpdate() override {
         if (ui.GetElementById<UIButton>("backMenu")->hasClicked())

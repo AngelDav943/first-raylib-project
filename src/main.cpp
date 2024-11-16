@@ -10,16 +10,16 @@ using namespace std;
 
 int main()
 {
+#ifdef PLATFORM_DESKTOP
     constexpr int screenWidth = 800;
     constexpr int screenHeight = 600;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "An amazing project");
     SetWindowMinSize(screenWidth / 2, screenHeight / 2);
-    // #if defined(ANDROID)
-    // SetConfigFlags(FLAG_FULLSCREEN_MODE);
-    // InitWindow(GetScreenWidth(), GetScreenHeight(), "An amazing project");
-    // #endif
+#else
+    InitWindow(0, 0, "An amazing project");
+#endif
 
     globalSceneManager.InsertScene("Menu", make_unique<MenuScene>());
     globalSceneManager.InsertScene("MapsMenu", make_unique<MapsMenuScene>());
@@ -35,6 +35,7 @@ int main()
     {
         SetExitKey(KEY_NULL);
 
+#ifdef PLATFORM_DESKTOP
         if (IsKeyPressed(KEY_F11))
         {
             // Checks if the window is already fullscreen
@@ -53,6 +54,7 @@ int main()
                 SetWindowSize(static_cast<int>(lastWindowSize.x), static_cast<int>(lastWindowSize.y));
             }
         }
+#endif
 
         globalSceneManager.Update();
 
@@ -67,4 +69,5 @@ int main()
     }
 
     CloseWindow();
+    return 0;
 }

@@ -23,7 +23,7 @@
 
 # Define required raylib variables
 PLATFORM               ?= PLATFORM_ANDROID
-RAYLIB_PATH            ?= ..\..
+RAYLIB_PATH        	   ?= C:/raylib/raylib
 
 # Define Android architecture (armeabi-v7a, arm64-v8a, x86, x86-64) and API version
 ANDROID_ARCH           ?= ARM64
@@ -75,6 +75,8 @@ RAYLIB_LIB_PATH = $(RAYLIB_PATH)\src
 # Shared libs must be added to APK if required
 ifeq ($(RAYLIB_LIBTYPE),SHARED)
     PROJECT_SHARED_LIBS = lib/$(ANDROID_ARCH_NAME)/libraylib.so
+    PROJECT_SHARED_LIBS += lib/$(ANDROID_ARCH_NAME)/libc++_shared.so
+    PROJECT_SHARED_LIBS += lib/$(ANDROID_ARCH_NAME)/libraylib.500.so
 endif
 
 # Compiler and archiver
@@ -100,14 +102,15 @@ CFLAGS += -Wall -Wa,--noexecstack -Wformat -Werror=format-security -no-canonical
 CFLAGS += -DANDROID -DPLATFORM_ANDROID -D__ANDROID_API__=$(ANDROID_API_VERSION)
 
 # Paths containing required header files
-INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external/android/native_app_glue
+INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I C:\android-ndk\sources\android\native_app_glue
 
 # Linker options
 LDFLAGS = -Wl,-soname,lib$(PROJECT_LIBRARY_NAME).so -Wl,--exclude-libs,libatomic.a
 LDFLAGS += -Wl,--build-id -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--warn-shared-textrel -Wl,--fatal-warnings
 LDFLAGS += -u ANativeActivity_onCreate
-LDFLAGS += -L. -L$(PROJECT_BUILD_PATH)/obj -L$(PROJECT_BUILD_PATH)/lib/$(ANDROID_ARCH_NAME) -L$(ANDROID_TOOLCHAIN)\sysroot\usr\lib
+LDFLAGS += -L. -L$(PROJECT_BUILD_PATH)/obj -L$(PROJECT_BUILD_PATH)/lib/$(ANDROID_ARCH_NAME) -L$(ANDROID_TOOLCHAIN)/sysroot/usr/lib
 LDFLAGS += -fPIC
+LDFLAGS += -v
 
 # Define any libraries to link into executable
 LDLIBS = -lm -lc++ -lraylib -llog -landroid -lEGL -lGLESv2 -lOpenSLES -ldl
@@ -128,7 +131,9 @@ all: create_temp_project_dirs \
      compile_project_class_dex \
      create_project_apk_package \
      sign_project_apk_package \
-     zipalign_project_apk_package
+     zipalign_project_apk_package \
+	 install \
+	 start
 
 # Create required temp directories for APK building
 create_temp_project_dirs:
@@ -159,9 +164,17 @@ endef
 copy_project_required_libs:
 ifeq ($(RAYLIB_LIBTYPE),SHARED)
 	copy /Y "$(RAYLIB_LIB_PATH)\libraylib.so" "$(PROJECT_BUILD_PATH)\lib\$(ANDROID_ARCH_NAME)\libraylib.so"
+	copy /Y "$(RAYLIB_LIB_PATH)\libraylib.so" "$(PROJECT_BUILD_PATH)\lib\$(ANDROID_ARCH_NAME)\libraylib.500.so"
 endif
 ifeq ($(RAYLIB_LIBTYPE),STATIC)
 	copy /Y "$(RAYLIB_LIB_PATH)\libraylib.a" "$(PROJECT_BUILD_PATH)\lib\$(ANDROID_ARCH_NAME)\libraylib.a"
+endif
+# Ensure libc++_shared.so is copied to the APK
+ifeq ($(ANDROID_ARCH),ARM)
+	copy /Y "$(ANDROID_TOOLCHAIN)\sysroot\usr\lib\arm-linux-androideabi\libc++_shared.so" "$(PROJECT_BUILD_PATH)\lib\$(ANDROID_ARCH_NAME)\libc++_shared.so"
+endif
+ifeq ($(ANDROID_ARCH),ARM64)
+	copy /Y "$(ANDROID_TOOLCHAIN)\sysroot\usr\lib\aarch64-linux-android\libc++_shared.so" "$(PROJECT_BUILD_PATH)\lib\$(ANDROID_ARCH_NAME)\libc++_shared.so"
 endif
 
 # Copy project required resources: strings.xml, icon.png, assets
@@ -173,6 +186,8 @@ copy_project_resources:
 	@echo ^<resources^> >> $(PROJECT_BUILD_PATH)\res\values\strings.xml
 	@echo ^<string name="app_name"^>$(APP_LABEL_NAME)^</string^> >> "$(PROJECT_BUILD_PATH)\res\values\strings.xml"
 	@echo ^</resources^> >> $(PROJECT_BUILD_PATH)\res\values\strings.xml
+# Copying all assets
+	xcopy assets "$(PROJECT_BUILD_PATH)\assets\resources" /s /i /y
 
 # Check if NativeLoader.java exists
 NATIVE_LOADER_EXISTS := $(wildcard $(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java)
@@ -184,8 +199,8 @@ ifeq ($(NATIVE_LOADER_EXISTS),)
 	@echo. >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
 	@echo public class NativeLoader extends android.app.NativeActivity { >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
 	@echo     static { >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
-	@echo         System.loadLibrary("raylib"); >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
 	@echo         System.loadLibrary("$(PROJECT_LIBRARY_NAME)"); >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
+	@echo         System.loadLibrary("raylib"); >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
 	@echo     } >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
 	@echo } >> "$(PROJECT_BUILD_PATH)/src/com/$(APP_COMPANY_NAME)/$(APP_PRODUCT_NAME)/NativeLoader.java"
 else
@@ -311,7 +326,10 @@ zipalign_project_apk_package:
 # Install $(PROJECT_NAME).apk to default emulator/device
 # NOTE: Use -e (emulator) or -d (device) parameters if required
 install:
-	$(ANDROID_PLATFORM_TOOLS)/adb install --abi $(ANDROID_ARCH_NAME) -rds $(PROJECT_NAME).apk
+	$(ANDROID_PLATFORM_TOOLS)/adb install $(PROJECT_NAME).apk
+
+start:
+	$(ANDROID_PLATFORM_TOOLS)/adb shell am start -n com.$(APP_COMPANY_NAME).$(APP_PRODUCT_NAME)/com.$(APP_COMPANY_NAME).$(APP_PRODUCT_NAME).NativeLoader
 
 # Check supported ABI for the device (armeabi-v7a, arm64-v8a, x86, x86_64)
 check_device_abi:

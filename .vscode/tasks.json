@@ -17,14 +17,16 @@
                     "RAYLIB_PATH=C:/raylib/raylib",
                     "PROJECT_NAME=debug",
                     "OBJS=src/*.cpp",
-                    "BUILD_MODE=DEBUG"
+                    "BUILD_MODE=DEBUG",
+                    "PLATFORM=PLATFORM_DESKTOP"
                 ]
             },
             "osx": {
                 "args": [
                     "OBJS=src/*.cpp",
                     "PROJECT_NAME=debug",
-                    "BUILD_MODE=DEBUG"
+                    "BUILD_MODE=DEBUG",
+                    "PLATFORM=PLATFORM_DESKTOP"
                 ]
             },
             "linux": {
@@ -34,7 +36,8 @@
                     "EXAMPLE_RUNTIME_PATH=/home/linuxbrew/.linuxbrew/lib",
                     "OBJS=src/*.cpp",
                     "PROJECT_NAME=debug",
-                    "BUILD_MODE=DEBUG"
+                    "BUILD_MODE=DEBUG",
+                    "PLATFORM=PLATFORM_DESKTOP"
                 ]
             },
             "group": {
@@ -49,19 +52,19 @@
             "label": "build release",
             "type": "process",
             "command": "make",
-            "args": [
-                "PLATFORM=PLATFORM_DESKTOP"
-            ],
+            "args": [],
             "windows": {
                 "command": "C:/raylib/w64devkit/bin/mingw32-make.exe",
                 "args": [
                     "RAYLIB_PATH=C:/raylib/raylib",
-                    "OBJS=src/*.cpp"
+                    "OBJS=src/*.cpp",
+                    "PLATFORM=PLATFORM_DESKTOP"
                 ]
             },
             "osx": {
                 "args": [
-                    "OBJS=src/*.cpp"
+                    "OBJS=src/*.cpp",
+                    "PLATFORM=PLATFORM_DESKTOP"
                 ]
             },
             "linux": {
@@ -69,7 +72,45 @@
                     "DESTDIR=/home/linuxbrew/.linuxbrew",
                     "RAYLIB_LIBTYPE=SHARED",
                     "EXAMPLE_RUNTIME_PATH=/home/linuxbrew/.linuxbrew/lib",
-                    "OBJS=src/*.cpp"
+                    "OBJS=src/*.cpp",
+                    "PLATFORM=PLATFORM_DESKTOP"
+                ]
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "detail": "compiler: C:\\raylib\\w64devkit\\bin\\g++.exe"
+        },
+        {
+            "label": "android build release",
+            "type": "process",
+            "command": "make",
+            "args": [],
+            "windows": {
+                "command": "C:/raylib/w64devkit/bin/mingw32-make.exe",
+                "args": [
+                    "RAYLIB_PATH=C:/raylib/raylib",
+                    "OBJS=src/*.cpp",
+                    "PLATFORM=PLATFORM_ANDROID"
+                ]
+            },
+            "osx": {
+                "args": [
+                    "OBJS=src/*.cpp",
+                    "PLATFORM=PLATFORM_ANDROID"
+                ]
+            },
+            "linux": {
+                "args": [
+                    "DESTDIR=/home/linuxbrew/.linuxbrew",
+                    "RAYLIB_LIBTYPE=SHARED",
+                    "EXAMPLE_RUNTIME_PATH=/home/linuxbrew/.linuxbrew/lib",
+                    "OBJS=src/*.cpp",
+                    "PLATFORM=PLATFORM_ANDROID"
                 ]
             },
             "problemMatcher": [
