@@ -14,8 +14,8 @@ private:
 
 public:
     void Start() override {
-        tile_texture = LoadTexture("assets/textures/white_hexagon_tiles.png");
-        // FilePathList test = LoadDirectoryFiles("assets/maps");
+        tile_texture = LoadTexture("textures/white_hexagon_tiles.png");
+        // FilePathList test = LoadDirectoryFiles("maps");
 
         ui.AddElement(
             "hasFolderTest",
@@ -31,10 +31,11 @@ public:
                         Scaling{1, 0} // scale
                     } // Sizing of element
                 },
-                DirectoryExists("assets/maps") ? "'assets/maps' directory found" : "'assets/maps' Directory doesn't exist"
+                DirectoryExists("maps") ? "'maps' directory found" : "'maps' Directory doesn't exist"
             )
         );
 
+#ifdef PLATFORM_DESKTOP
         ui.AddElement(
             "backMenu",
             new UIButton(
@@ -52,6 +53,7 @@ public:
                 "Back to menu"
             )
         );
+#endif
 
         // SaveFileText("test.txt","Hello world");
     }
@@ -81,7 +83,9 @@ public:
 
         FilePathList files = LoadDirectoryFiles("");
         list<string> texts = {
-			GetWorkingDirectory()
+			(string)"Working directory: " + GetWorkingDirectory(),
+            (string)"App directory:" + GetApplicationDirectory(),
+            "Keypressed:" + to_string(GetKeyPressed())
 		};
 
         for (int i = 0; i < files.count; i++)
@@ -97,11 +101,18 @@ public:
 		}
     }
     void LateUpdate() override {
+#ifdef PLATFORM_DESKTOP
         if (ui.GetElementById<UIButton>("backMenu")->hasClicked())
         {
             globalSceneManager.LoadScene("Menu");
             return;
         }
+#else
+        if (IsKeyPressed(KEY_BACK)) {
+            globalSceneManager.LoadScene("Menu");
+            return;
+        }
+#endif
     }
     
     void Unload() override {}

@@ -41,8 +41,8 @@ public:
 		SetMainCamera(&(CamController.currentCamera));
 
 		// Loads textures
-		book_texture = LoadTexture("assets/textures/book_texture.png");
-		tile_texture = LoadTexture("assets/textures/blueprint_tiles.png");
+		book_texture = LoadTexture("textures/book_texture.png");
+		tile_texture = LoadTexture("textures/blueprint_tiles.png");
 
 		// Loads the pause menu
 		PauseController.init(ui);
@@ -90,7 +90,7 @@ public:
 		space.AddObject(
 				 "book",
 				 new PhysicsObject(
-					 LoadModel("assets/models/book.obj"), // model
+					 LoadModel("models/book.obj"), // model
 					 &space,							  // space used for collision detection
 					 Vector3{0, 5, 0}					  // initial position
 					 ))

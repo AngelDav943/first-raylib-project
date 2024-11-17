@@ -81,8 +81,11 @@ public:
     void UpdateMenu(UIManager &ui, SceneManager &sceneManager)
     {
         UIContainer *pauseContainer = ui.GetElementById<UIContainer>("pauseMenu");
-        if (IsKeyPressed(KEY_ESCAPE))
-        {
+#ifdef PLATFORM_DESKTOP
+        if (IsKeyPressed(KEY_ESCAPE)) {
+#else
+        if (IsKeyPressed(KEY_BACK)) {
+#endif
             if (pauseContainer->isVisible() == false)
             {
                 EnableCursor();

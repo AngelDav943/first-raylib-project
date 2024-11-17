@@ -23,7 +23,7 @@ public:
     // Initialize game assets
     void Start() override
     {
-        tile_texture = LoadTexture("assets/textures/blueprint_tiles.png");
+        tile_texture = LoadTexture("textures/blueprint_tiles.png");
 
         ui.AddElement(
             "test",

@@ -17,6 +17,7 @@ int main()
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "An amazing project");
     SetWindowMinSize(screenWidth / 2, screenHeight / 2);
+    ChangeDirectory("assets");
 #else
     InitWindow(0, 0, "An amazing project");
 #endif
