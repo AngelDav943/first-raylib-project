@@ -103,8 +103,9 @@ public:
 	float planeY = 0;
 	void Update() override
 	{
-		if (IsCursorHidden())
+		if (PauseController.isVisible(ui) == false)
 		{
+			
 			CamController.Update();
 			SetMousePosition(center.x, center.y); // Set the mouse position to the center
 		}

@@ -388,6 +388,9 @@ endif
 # Default target entry
 # NOTE: We call this Makefile target or Makefile.Android target
 all:
+ifeq ($(PLATFORM),PLATFORM_DESKTOP)
+	cd resources && cmd /c compile_rc.bat
+endif
 	$(MAKE) $(MAKEFILE_PARAMS)
 
 # Project target defined by PROJECT_NAME

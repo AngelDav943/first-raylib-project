@@ -75,6 +75,14 @@ public:
             ->setVisible(false);
     }
 
+    bool isVisible(UIManager &ui)
+    {
+        UIContainer *pauseContainer = ui.GetElementById<UIContainer>("pauseMenu");
+        if (pauseContainer == nullptr) return false;
+
+        return pauseContainer->isVisible();
+    }
+
     /// @brief Updates the menu, recommended to be used on `LateUpdate()`
     /// @param ui The UI Manager used on the scene
     /// @param sceneManager The scene manager used by the scene, usually is `globalSceneManager`

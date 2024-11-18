@@ -29,7 +29,13 @@ public:
                                               (float)(IsKeyDown(KEY_E) - IsKeyDown(KEY_Q)),
                                               (float)(IsKeyDown(KEY_W) - IsKeyDown(KEY_S))});
 
+#ifdef PLATFORM_DESKTOP
         Vector2 mouseDelta = GetMouseDelta();
+#else
+        Vector2 mouseDelta = {0, 0};
+        
+        if (IsGestureDetected(GESTURE_DRAG)) mouseDelta = Vector2Scale(GetGestureDragVector(), 10);
+#endif
         angleX -= camera_sensitivity * mouseDelta.x * deltaTime;
 
         float newAngleY = angleY - (camera_sensitivity * mouseDelta.y * deltaTime);
